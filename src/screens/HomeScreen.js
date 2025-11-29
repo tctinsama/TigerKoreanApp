@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { LessonCard, CategoryCard } from '../components/Cards';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -19,10 +19,10 @@ const HomeScreen = () => {
 
   // Dữ liệu mẫu cho các bài học
   const lessons = [
-    { id: 1, title: 'Bảng chữ cái Hangul', level: 'Beginner', progress: 75 },
-    { id: 2, title: 'Chào hỏi cơ bản', level: 'Beginner', progress: 50 },
-    { id: 3, title: 'Giới thiệu bản thân', level: 'Elementary', progress: 30 },
-    { id: 4, title: 'Số đếm và thời gian', level: 'Elementary', progress: 10 },
+    { id: 1, title: 'Cấp độ 1 - Sơ cấp', level: 'Beginner', progress: 75, levelId: 1, color: '#10B981' },
+    { id: 2, title: 'Cấp độ 2 - Sơ cấp nâng cao', level: 'Elementary', progress: 50, levelId: 2, color: '#3B82F6' },
+    { id: 3, title: 'Cấp độ 3 - Trung cấp', level: 'Elementary', progress: 30, levelId: 3, color: '#F59E0B' },
+    { id: 4, title: 'Cấp độ 4 - Trung cấp nâng cao', level: 'Elementary', progress: 10, levelId: 4, color: '#8B5CF6' },
   ];
 
   // Dữ liệu mẫu cho danh mục
@@ -31,6 +31,7 @@ const HomeScreen = () => {
     { id: 2, icon: '✍️', title: 'Ngữ pháp', subtitle: '50+ bài' },
     { id: 3, icon: '🎧', title: 'Luyện nghe', subtitle: '100+ audio' },
     { id: 4, icon: '💬', title: 'Giao tiếp', subtitle: '30+ hội thoại' },
+    { id: 5, icon: '🎯', title: 'Kiểm tra trình độ', subtitle: 'Placement test' },
   ];
 
   return (
@@ -80,7 +81,13 @@ const HomeScreen = () => {
                 icon={category.icon}
                 title={category.title}
                 subtitle={category.subtitle}
-                onPress={() => Alert.alert(category.title, 'Tính năng đang phát triển')}
+                onPress={() => {
+                  if (category.id === 5) {
+                    navigation.navigate('PlacementTest');
+                  } else {
+                    Alert.alert(category.title, 'Tính năng đang phát triển');
+                  }
+                }}
               />
             ))}
           </ScrollView>
@@ -100,7 +107,7 @@ const HomeScreen = () => {
               title={lesson.title}
               level={lesson.level}
               progress={lesson.progress}
-              onPress={() => Alert.alert(lesson.title, 'Bắt đầu học bài này!')}
+              onPress={() => navigation.navigate('LessonPath', { levelId: lesson.levelId })}
             />
           ))}
         </View>

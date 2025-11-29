@@ -7,6 +7,8 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 // Screens
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import PlacementTestScreen from '../screens/PlacementTestScreen';
+import LessonPathScreen from '../screens/LessonPathScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +36,16 @@ const AppNavigator = () => {
           // Màn hình cho người dùng đã đăng nhập
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen 
+              name="PlacementTest" 
+              component={PlacementTestScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="LessonPath" 
+              component={LessonPathScreen}
+              options={{ headerShown: false }}
+            />
           </>
         ) : (
           // Màn hình cho người dùng chưa đăng nhập
