@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import LessonNode from '../../components/LessonNode';
 import { lessonService } from '../../services/lessonService';
@@ -100,58 +101,57 @@ const LessonPathScreen = ({ route, navigation }) => {
   const renderConnectingPath = () => {
     if (lessons.length < 2) return null;
 
-    const pathData = [];
+    const paths = [];
     const centerX = width / 2;
-    const startY = 100;
-    const verticalSpacing = 140;
-    const horizontalOffset = 80;
+    const startY = 120;
+    const spacing = 160;
+    const circleRadius = 40;
 
-    lessons.forEach((lesson, index) => {
-      if (index === 0) return;
-
-      const prevIsLeft = (index - 1) % 2 === 0;
-      const currentIsLeft = index % 2 === 0;
-
-      const prevX = prevIsLeft ? centerX - horizontalOffset : centerX + horizontalOffset;
-      const currentX = currentIsLeft ? centerX - horizontalOffset : centerX + horizontalOffset;
-      const prevY = startY + (index - 1) * verticalSpacing;
-      const currentY = startY + index * verticalSpacing;
-
-      const midY = (prevY + currentY) / 2;
-      const curveOffset = 30;
-
-      const path = `M ${prevX} ${prevY} 
-                    Q ${prevX} ${midY - curveOffset}, ${(prevX + currentX) / 2} ${midY}
-                    Q ${currentX} ${midY + curveOffset}, ${currentX} ${currentY}`;
-
-      pathData.push({
-        path,
-        isCompleted: lessons[index - 1].status === 'completed',
-        key: `path-${index}`,
-      });
-    });
+    for (let i = 1; i < lessons.length; i++) {
+      const prevIndex = i - 1;
+      const isEven = i % 2 === 0;
+      
+      // Tính tâm của các circle
+      const prevX = (prevIndex % 2 === 0) ? centerX - 80 : centerX + 80;
+      const currX = isEven ? centerX - 80 : centerX + 80;
+      
+      // yPosition là top của container, tâm circle = yPosition + circleRadius
+      const prevCenterY = startY + (prevIndex * spacing) + circleRadius;
+      const currCenterY = startY + (i * spacing) + circleRadius;
+      
+      // Điểm bắt đầu: đáy circle trên
+      const startPointY = prevCenterY + circleRadius;
+      // Điểm kết thúc: đỉnh circle dưới  
+      const endPointY = currCenterY - circleRadius;
+      
+      // Tính khoảng cách giữa 2 điểm
+      const deltaY = endPointY - startPointY;
+      
+      // Control points
+      const controlY1 = startPointY + deltaY * 0.4;
+      const controlY2 = endPointY - deltaY * 0.4;
+      
+      // Cubic Bezier curve
+      const path = `M ${prevX},${startPointY} 
+                    C ${prevX},${controlY1} ${currX},${controlY2} ${currX},${endPointY}`;
+      
+      const isLocked = lessons[i].status === 'locked';
+      const isCompleted = lessons[i].status === 'completed';
+      
+      paths.push({ path, isLocked, isCompleted, key: i });
+    }
 
     return (
-      <Svg height={startY + lessons.length * verticalSpacing} width={width} style={styles.svgPath}>
-        <Defs>
-          <SvgLinearGradient id="completedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#10B981" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#059669" stopOpacity="1" />
-          </SvgLinearGradient>
-          <SvgLinearGradient id="lockedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <Stop offset="0%" stopColor="#E5E7EB" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#D1D5DB" stopOpacity="1" />
-          </SvgLinearGradient>
-        </Defs>
-        {pathData.map((item) => (
+      <Svg height={startY + lessons.length * spacing + 100} width={width} style={styles.svgPath}>
+        {paths.map(({ path, isLocked, isCompleted, key }) => (
           <Path
-            key={item.key}
-            d={item.path}
-            stroke={item.isCompleted ? 'url(#completedGrad)' : 'url(#lockedGrad)'}
-            strokeWidth="6"
+            key={key}
+            d={path}
+            stroke={isCompleted ? '#4CAF50' : isLocked ? '#BDBDBD' : '#FFC107'}
+            strokeWidth={8}
             fill="none"
             strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeDasharray={isLocked ? '8,4' : '0'}
           />
         ))}
       </Svg>
@@ -185,7 +185,7 @@ const LessonPathScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={levelInfo.color} translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor={levelInfo.color} translucent={true} />
 
       {/* Header */}
       <LinearGradient colors={[levelInfo.color, levelInfo.color + 'EE']} style={styles.header}>
@@ -233,30 +233,58 @@ const LessonPathScreen = ({ route, navigation }) => {
 
         <View style={styles.lessonsContainer}>
           {lessons.map((lesson, index) => {
-            const isLeft = index % 2 === 0;
             const centerX = width / 2;
-            const horizontalOffset = 80;
-            const xPosition = isLeft ? centerX - horizontalOffset : centerX + horizontalOffset;
+            const startY = 120;
+            const spacing = 160;
+            const isEven = index % 2 === 0;
+            const xPosition = isEven ? centerX - 100 : centerX + 100;
+            const yPosition = startY + index * spacing;
+            
+            const isCompleted = lesson.status === 'completed';
+            const isAvailable = lesson.status === 'available';
+            const isLocked = lesson.status === 'locked';
 
             return (
               <View
                 key={lesson.id}
-                style={[
-                  styles.lessonWrapper,
-                  {
-                    position: 'absolute',
-                    left: xPosition - 50,
-                    top: 100 + index * 140,
-                  },
-                ]}
+                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 60 }]}
               >
-                <LessonNode lesson={lesson} onPress={() => handleLessonPress(lesson)} isFirst={index === 0} />
+                <TouchableOpacity
+                  onPress={() => handleLessonPress(lesson)}
+                  disabled={isLocked}
+                  style={styles.lessonTouchable}
+                >
+                  <View style={[
+                    styles.lessonCircle,
+                    isCompleted && styles.completedCircle,
+                    isAvailable && styles.availableCircle,
+                    isLocked && styles.lockedCircle,
+                  ]}>
+                    <View style={styles.innerCircle}>
+                      <MaterialCommunityIcons
+                        name={isCompleted ? "check-bold" : lesson.icon || "book-outline"}
+                        size={28}
+                        color={isLocked ? '#999' : '#FFF'}
+                      />
+                    </View>
+                  </View>
+
+                  <Text style={styles.lessonTitle} numberOfLines={2}>
+                    {lesson.title}
+                  </Text>
+                </TouchableOpacity>
+
+                {isAvailable && index > 0 && (
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>MỚI</Text>
+                  </View>
+                )}
               </View>
             );
           })}
         </View>
 
-        <View style={{ height: 100 + lessons.length * 140 + 100 }} />
+        <View style={{ height: 120 + lessons.length * 160 + 100 }} />
       </ScrollView>
     </View>
   );
@@ -265,7 +293,7 @@ const LessonPathScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEFBF3',
+    backgroundColor: '#FFF8F0',
   },
   centerContainer: {
     flex: 1,
@@ -308,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: Platform.OS === 'ios' ? 60 : 12,
     paddingBottom: 12,
   },
   backButton: {
@@ -422,9 +450,72 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 2,
   },
-  lessonWrapper: {
-    width: 100,
+  lessonNodeContainer: {
+    position: 'absolute',
+    width: 120,
     alignItems: 'center',
+    zIndex: 10,
+  },
+  lessonTouchable: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  lessonCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  completedCircle: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#2E7D32',
+  },
+  availableCircle: {
+    backgroundColor: '#FFC107',
+    borderColor: '#F57F17',
+  },
+  lockedCircle: {
+    backgroundColor: '#E0E0E0',
+    borderColor: '#BDBDBD',
+  },
+  innerCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lessonTitle: {
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    paddingHorizontal: 4,
+  },
+  newBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF5722',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  newBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
 

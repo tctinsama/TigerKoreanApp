@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ProfileScreen = ({ navigation }) => {
@@ -43,7 +43,7 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#FF6B35',
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 30,
     alignItems: 'center',
     borderBottomLeftRadius: 20,

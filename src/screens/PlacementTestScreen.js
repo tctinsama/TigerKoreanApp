@@ -8,6 +8,7 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
 import { placementQuestions, levelRecommendations } from '../constants/placementTestData';
 
@@ -92,8 +93,9 @@ const PlacementTestScreen = ({ navigation }) => {
   // INTRO SCREEN
   if (currentStep === 'intro') {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.introContainer}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.introContainer}>
           {/* Icon */}
           <View style={styles.iconContainer}>
             <Text style={styles.iconLarge}>🐯</Text>
@@ -132,6 +134,7 @@ const PlacementTestScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </SafeAreaView>
     );
   }
 
@@ -141,7 +144,7 @@ const PlacementTestScreen = ({ navigation }) => {
     const progress = ((currentQuestion + 1) / placementQuestions.length) * 100;
 
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         {/* Header with progress */}
         <View style={styles.testHeader}>
           <View style={styles.progressInfo}>
@@ -206,7 +209,7 @@ const PlacementTestScreen = ({ navigation }) => {
 
           <View style={{ height: 40 }} />
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -215,7 +218,8 @@ const PlacementTestScreen = ({ navigation }) => {
     const recommendation = levelRecommendations[testResult.recommendedLevel - 1];
 
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.resultContainer}>
           {/* Celebration */}
           <Text style={styles.celebrationIcon}>🎉</Text>
@@ -287,6 +291,7 @@ const PlacementTestScreen = ({ navigation }) => {
           <View style={{ height: 20 }} />
         </View>
       </ScrollView>
+      </SafeAreaView>
     );
   }
 

@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   Alert,
   Dimensions,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import LessonNode from '../components/LessonNode';
@@ -98,7 +98,7 @@ const LessonPathScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor={levelInfo.color} />
 
       {/* Modern Header */}

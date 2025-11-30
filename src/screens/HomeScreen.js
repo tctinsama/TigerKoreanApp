@@ -5,13 +5,11 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView,
-  Alert,
-  StatusBar,
-  Platform,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
-import { LessonCard, CategoryCard } from '../../components/Cards';
+import { useAuth } from '../contexts/AuthContext';
+import { LessonCard, CategoryCard } from '../components/Cards';
 
 const HomeScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
@@ -38,17 +36,16 @@ const HomeScreen = ({ navigation }) => {
   ];
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>🐯 TigerKorean</Text>
-          <Text style={styles.welcome}>Xin chào, {user?.fullName || user?.email || 'User'}!</Text>
+          <Text style={styles.welcome}>Xin chào, {user?.username || 'User'}!</Text>
         </View>
         <TouchableOpacity 
           style={styles.profileButton}
-          onPress={() => navigation.navigate('ProfileTab')}
+          onPress={handleLogout}
         >
           <Text style={styles.profileIcon}>👤</Text>
         </TouchableOpacity>
@@ -87,7 +84,7 @@ const HomeScreen = ({ navigation }) => {
                 subtitle={category.subtitle}
                 onPress={() => {
                   if (category.id === 5) {
-                    navigation.navigate('TestTab');
+                    navigation.navigate('PlacementTest');
                   } else {
                     Alert.alert(category.title, 'Tính năng đang phát triển');
                   }
@@ -101,7 +98,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Bài học của bạn</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('PathTab')}>
+            <TouchableOpacity>
               <Text style={styles.seeAll}>Xem tất cả</Text>
             </TouchableOpacity>
           </View>
@@ -111,10 +108,7 @@ const HomeScreen = ({ navigation }) => {
               title={lesson.title}
               level={lesson.level}
               progress={lesson.progress}
-              onPress={() => navigation.navigate('PathTab', { 
-                screen: 'LessonPath', 
-                params: { levelId: lesson.levelId } 
-              })}
+              onPress={() => navigation.navigate('LessonPath', { levelId: lesson.levelId })}
             />
           ))}
         </View>
@@ -122,7 +116,7 @@ const HomeScreen = ({ navigation }) => {
         {/* Bottom spacing */}
         <View style={{ height: 20 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -133,7 +127,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#FF6B35',
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingTop: 20,
     paddingBottom: 30,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 20,

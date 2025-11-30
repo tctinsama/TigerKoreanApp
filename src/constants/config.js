@@ -4,13 +4,20 @@ const API_CONFIG = {
   // Chọn BASE_URL phù hợp với môi trường của bạn:
   
   // 1. Máy ảo Android Studio:
-  BASE_URL: 'http://10.0.2.2:8080/api',
+  // BASE_URL: 'http://10.0.2.2:8080/api',
   
-  // 2. Điện thoại thật qua Expo Go (thay IP máy tính):
-  // BASE_URL: 'http://192.168.x.x:8080/api',
+  // 2. Điện thoại thật qua Expo Go (IP máy tính của bạn):
+  BASE_URL: 'http://172.16.0.62:8080/api',
   
   // 3. Localhost (iOS simulator):
   // BASE_URL: 'http://localhost:8080/api',
+  
+  // Cloudinary config
+  CLOUDINARY_CLOUD_NAME: 'dfeefsbap',
+  CLOUDINARY_UPLOAD_PRESET: 'ktiger_unsigned',
+  
+  // Google OAuth
+  GOOGLE_CLIENT_ID: '163931303040-f2d5b0sr9ervddgg3eceuaqqhvoifvro.apps.googleusercontent.com',
   
   TIMEOUT: 10000,
 };
