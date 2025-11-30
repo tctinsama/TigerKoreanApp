@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { COLORS } from '../constants/colors';
 
 // Import các màn hình
 import HomeScreen from '../screens/learner/HomeScreen';
@@ -65,7 +66,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                 <IconComponent
                   name={iconName}
                   size={isFocused ? 28 : 24}
-                  color={isFocused ? '#FF6B35' : '#999'}
+                  color={isFocused ? COLORS.primary : COLORS.textDisabled}
                 />
               </View>
             </TouchableOpacity>
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFE8DC',
+    backgroundColor: COLORS.primaryLight,
     borderRadius: 30,
     paddingVertical: 12,
     paddingHorizontal: 8,
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconContainerActive: {
-    backgroundColor: 'rgba(255, 107, 53, 0.15)',
+    backgroundColor: COLORS.primaryLight,
     transform: [{ scale: 1.05 }],
   },
 });

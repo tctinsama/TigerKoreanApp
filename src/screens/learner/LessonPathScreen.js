@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { COLORS } from '../../constants/colors';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import LessonNode from '../../components/LessonNode';
 import { lessonService } from '../../services/lessonService';
@@ -147,7 +148,7 @@ const LessonPathScreen = ({ route, navigation }) => {
           <Path
             key={key}
             d={path}
-            stroke={isCompleted ? '#4CAF50' : isLocked ? '#BDBDBD' : '#FFC107'}
+            stroke={isCompleted ? COLORS.accent : isLocked ? COLORS.disabled : COLORS.warning}
             strokeWidth={8}
             fill="none"
             strokeLinecap="round"
@@ -293,7 +294,7 @@ const LessonPathScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8F0',
+    backgroundColor: COLORS.background,
   },
   centerContainer: {
     flex: 1,
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: COLORS.textSecondary,
   },
   errorText: {
     fontSize: 64,
@@ -474,22 +475,22 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   completedCircle: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#2E7D32',
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accentDark,
   },
   availableCircle: {
-    backgroundColor: '#FFC107',
+    backgroundColor: COLORS.warning,
     borderColor: '#F57F17',
   },
   lockedCircle: {
-    backgroundColor: '#E0E0E0',
-    borderColor: '#BDBDBD',
+    backgroundColor: COLORS.disabled,
+    borderColor: COLORS.border,
   },
   innerCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -497,7 +498,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
+    color: COLORS.text,
     textAlign: 'center',
     paddingHorizontal: 4,
   },
@@ -505,15 +506,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#FF5722',
+    backgroundColor: COLORS.error,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: COLORS.surface,
   },
   newBadgeText: {
-    color: '#FFF',
+    color: COLORS.surface,
     fontSize: 10,
     fontWeight: 'bold',
   },
