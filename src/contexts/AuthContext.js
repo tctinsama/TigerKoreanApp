@@ -26,19 +26,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (username, password) => {
-    // Tạm thời giả lập login thành công cho demo UI
-    setUser({
-      id: 1,
-      username: username,
-      email: username + '@demo.com',
-    });
-    return { success: true };
+  const login = async (userData) => {
+    // Nhận userData từ authService.signIn và set vào state
+    setUser(userData);
     
-    /* TODO: Kích hoạt khi có backend
-    const result = await authService.login(username, password);
-    if (result.success) {
-      setUser(result.data.user);
+    /* TODO: Nếu muốn gọi API login từ đây
+    const result = await authService.signIn(email, password);
+    if (result) {
+      setUser(result);
     }
     return result;
     */

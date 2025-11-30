@@ -12,44 +12,37 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import authService from '../services/authService';
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState('learner');
-  const [password, setPassword] = useState('learner123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
     // Validation
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
-    // Tạm thời giả lập đăng nhập thành công để test UI
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Demo Mode', 'Đăng nhập thành công! (Demo - chưa kết nối BE)');
-      // Giả lập login thành công
-      login(username, password);
-    }, 1000);
     
-    /* TODO: Kích hoạt khi có backend
     try {
-      const result = await login(username, password);
+      const data = await authService.login(email, password);
+      console.log("Login success:", data);
+
+      // Cập nhật user trong AuthContext
+      // AppNavigator sẽ tự động chuyển sang màn hình Home
+      await login(data);
       
-      if (result.success) {
-        Alert.alert('Thành công', 'Đăng nhập thành công!');
-      } else {
-        Alert.alert('Lỗi', result.message || 'Đăng nhập thất bại');
-      }
     } catch (error) {
-      Alert.alert('Lỗi', 'Có lỗi xảy ra, vui lòng thử lại');
+      console.log(error);
+      Alert.alert('Đăng nhập thất bại', 'Email hoặc mật khẩu không đúng');
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (
@@ -71,14 +64,15 @@ const LoginScreen = ({ navigation }) => {
           {/* Form đăng nhập */}
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Tên đăng nhập</Text>
+              <Text style={styles.label}>Email</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Nhập tên đăng nhập"
-                value={username}
-                onChangeText={setUsername}
+                placeholder="Nhập email"
+                value={email}
+                onChangeText={setEmail}
                 autoCapitalize="none"
                 autoCorrect={false}
+                keyboardType="email-address"
                 editable={!loading}
               />
             </View>

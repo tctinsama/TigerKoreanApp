@@ -4,28 +4,22 @@ import { API_ENDPOINTS } from '../constants/config';
 
 class AuthService {
   // Đăng nhập
-  async login(username, password) {
+  async login(email, password) {
     try {
-      const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, {
-        username,
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.SIGNIN, {
+        email,
         password,
       });
 
-      const { accessToken, refreshToken, user } = response.data;
+      const { token, ...userData } = response.data;
 
       // Lưu token và thông tin user vào AsyncStorage
-      await AsyncStorage.multiSet([
-        ['accessToken', accessToken],
-        ['refreshToken', refreshToken],
-        ['user', JSON.stringify(user)],
-      ]);
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('user', JSON.stringify(response.data));
 
-      return { success: true, data: response.data };
+      return response.data; // Trả về data để AuthContext xử lý
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Đăng nhập thất bại',
-      };
+      throw error; // Throw error để LoginScreen bắt được
     }
   }
 
