@@ -107,35 +107,45 @@ const LessonPathScreen = ({ route, navigation }) => {
     const startY = 20;
     const spacing = 140;
     const circleRadius = 40;
-    const offset = 60; // Khoảng cách từ center
+    const offset = 60;
 
     for (let i = 1; i < lessons.length; i++) {
       const prevIndex = i - 1;
       const isEven = i % 2 === 0;
       
-      // Tính tâm của các circle
+      // Tính vị trí X: tâm của circle
       const prevX = (prevIndex % 2 === 0) ? centerX - offset : centerX + offset;
       const currX = isEven ? centerX - offset : centerX + offset;
       
-      // Tâm của circle
-      const prevCenterY = startY + (prevIndex * spacing) + circleRadius;
-      const currCenterY = startY + (i * spacing) + circleRadius;
+      // Tính vị trí Y: chính xác như trong render circle
+      // Circle được đặt tại: { top: yPosition, left: circleX - 40 }
+      // yPosition = startY + index * spacing
+      // Circle có height 80, nên:
+      // - Top edge ở yPosition
+      // - Bottom edge ở yPosition + 80
+      // - Center ở yPosition + 40
       
-      // Điểm bắt đầu: đáy circle trên
-      const startPointY = prevCenterY + circleRadius;
-      // Điểm kết thúc: đỉnh circle dưới  
-      const endPointY = currCenterY - circleRadius;
+      const prevYPosition = startY + (prevIndex * spacing);
+      const currYPosition = startY + (i * spacing);
       
-      // Tính khoảng cách giữa 2 điểm
+      // Thêm paddingTop từ lessonsContainer
+      const containerPaddingTop = 20;
+      
+      // Điểm bắt đầu: bottom của circle trên
+      const startPointY = prevYPosition + 80 + containerPaddingTop;
+      // Điểm kết thúc: top của circle dưới
+      const endPointY = currYPosition + containerPaddingTop;
+      
       const deltaY = endPointY - startPointY;
       
-      // Control points cho đường cong mượt
-      const controlY1 = startPointY + deltaY * 0.4;
-      const controlY2 = endPointY - deltaY * 0.4;
-      
       // Cubic Bezier curve
-      const path = `M ${prevX},${startPointY} 
-                    C ${prevX},${controlY1} ${currX},${controlY2} ${currX},${endPointY}`;
+      const controlX1 = prevX;
+      const controlY1 = startPointY + deltaY * 0.35;
+      
+      const controlX2 = currX;
+      const controlY2 = endPointY - deltaY * 0.35;
+      
+      const path = `M ${prevX},${startPointY} C ${controlX1},${controlY1} ${controlX2},${controlY2} ${currX},${endPointY}`;
       
       const isLocked = lessons[i].status === 'locked';
       const isCompleted = lessons[i].status === 'completed';
@@ -144,13 +154,13 @@ const LessonPathScreen = ({ route, navigation }) => {
     }
 
     return (
-      <Svg height={startY + lessons.length * spacing + 100} width={width} style={styles.svgPath}>
+      <Svg height={startY + lessons.length * spacing + 100 + 20} width={width} style={styles.svgPath}>
         {paths.map(({ path, isLocked, isCompleted, key }) => (
           <Path
             key={key}
             d={path}
             stroke={isCompleted ? COLORS.accent : isLocked ? COLORS.disabled : COLORS.warning}
-            strokeWidth={6}
+            strokeWidth={5}
             fill="none"
             strokeLinecap="round"
             strokeDasharray={isLocked ? '8,4' : '0'}
@@ -240,7 +250,7 @@ const LessonPathScreen = ({ route, navigation }) => {
             const spacing = 140;
             const offset = 60;
             const isEven = index % 2 === 0;
-            const xPosition = isEven ? centerX - offset : centerX + offset;
+            const circleX = isEven ? centerX - offset : centerX + offset;
             const yPosition = startY + index * spacing;
             
             const isCompleted = lesson.status === 'completed';
@@ -248,40 +258,60 @@ const LessonPathScreen = ({ route, navigation }) => {
             const isLocked = lesson.status === 'locked';
 
             return (
-              <View
-                key={lesson.id}
-                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 40 }]}
-              >
-                <TouchableOpacity
-                  onPress={() => handleLessonPress(lesson)}
-                  disabled={isLocked}
-                  style={styles.lessonTouchable}
+              <View key={lesson.id}>
+                {/* Circle */}
+                <View
+                  style={[styles.lessonNodeContainer, { top: yPosition, left: circleX - 40 }]}
                 >
-                  <View style={[
-                    styles.lessonCircle,
-                    isCompleted && styles.completedCircle,
-                    isAvailable && styles.availableCircle,
-                    isLocked && styles.lockedCircle,
-                  ]}>
-                    <View style={styles.innerCircle}>
-                      <MaterialCommunityIcons
-                        name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
-                        size={28}
-                        color={isLocked ? '#999' : '#FFF'}
-                      />
+                  <TouchableOpacity
+                    onPress={() => handleLessonPress(lesson)}
+                    disabled={isLocked}
+                    style={styles.lessonTouchable}
+                  >
+                    <View style={[
+                      styles.lessonCircle,
+                      isCompleted && styles.completedCircle,
+                      isAvailable && styles.availableCircle,
+                      isLocked && styles.lockedCircle,
+                    ]}>
+                      <View style={styles.innerCircle}>
+                        <MaterialCommunityIcons
+                          name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
+                          size={28}
+                          color={isLocked ? '#999' : '#FFF'}
+                        />
+                      </View>
                     </View>
-                  </View>
 
-                  <Text style={styles.lessonTitle} numberOfLines={2}>
+                    {isAvailable && index > 0 && (
+                      <View style={styles.newBadge}>
+                        <Text style={styles.newBadgeText}>MỚI</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Tiêu đề bên cạnh */}
+                <View
+                  style={[
+                    styles.lessonTitleContainer,
+                    { 
+                      top: yPosition + 15,
+                      left: isEven ? circleX + 50 : 20,
+                      right: isEven ? 20 : width - circleX + 50,
+                    }
+                  ]}
+                >
+                  <Text 
+                    style={[
+                      styles.lessonTitle,
+                      isEven ? styles.lessonTitleLeft : styles.lessonTitleRight
+                    ]} 
+                    numberOfLines={3}
+                  >
                     {lesson.title}
                   </Text>
-                </TouchableOpacity>
-
-                {isAvailable && index > 0 && (
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>MỚI</Text>
-                  </View>
-                )}
+                </View>
               </View>
             );
           })}
@@ -462,7 +492,27 @@ const styles = StyleSheet.create({
   },
   lessonTouchable: {
     alignItems: 'center',
-    width: '100%',
+    position: 'relative',
+  },
+  lessonTitleContainer: {
+    position: 'absolute',
+    zIndex: 15,
+    paddingHorizontal: 4,
+  },
+  lessonTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    lineHeight: 20,
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  lessonTitleLeft: {
+    textAlign: 'left',
+  },
+  lessonTitleRight: {
+    textAlign: 'right',
   },
   lessonCircle: {
     width: 80,
@@ -496,14 +546,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  lessonTitle: {
-    marginTop: 8,
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.text,
-    textAlign: 'center',
-    paddingHorizontal: 4,
   },
   newBadge: {
     position: 'absolute',
