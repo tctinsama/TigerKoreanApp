@@ -104,19 +104,20 @@ const LessonPathScreen = ({ route, navigation }) => {
 
     const paths = [];
     const centerX = width / 2;
-    const startY = 120;
-    const spacing = 160;
+    const startY = 20;
+    const spacing = 140;
     const circleRadius = 40;
+    const offset = 60; // Khoảng cách từ center
 
     for (let i = 1; i < lessons.length; i++) {
       const prevIndex = i - 1;
       const isEven = i % 2 === 0;
       
       // Tính tâm của các circle
-      const prevX = (prevIndex % 2 === 0) ? centerX - 80 : centerX + 80;
-      const currX = isEven ? centerX - 80 : centerX + 80;
+      const prevX = (prevIndex % 2 === 0) ? centerX - offset : centerX + offset;
+      const currX = isEven ? centerX - offset : centerX + offset;
       
-      // yPosition là top của container, tâm circle = yPosition + circleRadius
+      // Tâm của circle
       const prevCenterY = startY + (prevIndex * spacing) + circleRadius;
       const currCenterY = startY + (i * spacing) + circleRadius;
       
@@ -128,7 +129,7 @@ const LessonPathScreen = ({ route, navigation }) => {
       // Tính khoảng cách giữa 2 điểm
       const deltaY = endPointY - startPointY;
       
-      // Control points
+      // Control points cho đường cong mượt
       const controlY1 = startPointY + deltaY * 0.4;
       const controlY2 = endPointY - deltaY * 0.4;
       
@@ -149,7 +150,7 @@ const LessonPathScreen = ({ route, navigation }) => {
             key={key}
             d={path}
             stroke={isCompleted ? COLORS.accent : isLocked ? COLORS.disabled : COLORS.warning}
-            strokeWidth={8}
+            strokeWidth={6}
             fill="none"
             strokeLinecap="round"
             strokeDasharray={isLocked ? '8,4' : '0'}
@@ -235,10 +236,11 @@ const LessonPathScreen = ({ route, navigation }) => {
         <View style={styles.lessonsContainer}>
           {lessons.map((lesson, index) => {
             const centerX = width / 2;
-            const startY = 120;
-            const spacing = 160;
+            const startY = 20;
+            const spacing = 140;
+            const offset = 60;
             const isEven = index % 2 === 0;
-            const xPosition = isEven ? centerX - 100 : centerX + 100;
+            const xPosition = isEven ? centerX - offset : centerX + offset;
             const yPosition = startY + index * spacing;
             
             const isCompleted = lesson.status === 'completed';
@@ -248,7 +250,7 @@ const LessonPathScreen = ({ route, navigation }) => {
             return (
               <View
                 key={lesson.id}
-                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 60 }]}
+                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 40 }]}
               >
                 <TouchableOpacity
                   onPress={() => handleLessonPress(lesson)}
@@ -263,7 +265,7 @@ const LessonPathScreen = ({ route, navigation }) => {
                   ]}>
                     <View style={styles.innerCircle}>
                       <MaterialCommunityIcons
-                        name={isCompleted ? "check-bold" : lesson.icon || "book-outline"}
+                        name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
                         size={28}
                         color={isLocked ? '#999' : '#FFF'}
                       />
@@ -285,7 +287,7 @@ const LessonPathScreen = ({ route, navigation }) => {
           })}
         </View>
 
-        <View style={{ height: 120 + lessons.length * 160 + 100 }} />
+        <View style={{ height: 20 + lessons.length * 140 + 100 }} />
       </ScrollView>
     </View>
   );
@@ -450,10 +452,11 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     zIndex: 2,
+    paddingTop: 20,
   },
   lessonNodeContainer: {
     position: 'absolute',
-    width: 120,
+    width: 80,
     alignItems: 'center',
     zIndex: 10,
   },
