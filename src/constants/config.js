@@ -4,10 +4,10 @@ const API_CONFIG = {
   // Chọn BASE_URL phù hợp với môi trường của bạn:
   
   // 1. Máy ảo Android Studio:
-  // BASE_URL: 'http://10.0.2.2:8080/api',
+  BASE_URL: 'http://10.0.2.2:8080/api',
   
   // 2. Điện thoại thật qua Expo Go (IP máy tính của bạn):
-  BASE_URL: 'http://192.168.1.63:8080/api',
+  // BASE_URL: 'http://192.168.1.63:8080/api',
   
   // 3. Localhost (iOS simulator hoặc development):
   //BASE_URL: 'http://localhost:8080/api',
@@ -40,8 +40,23 @@ export const API_ENDPOINTS = {
   },
   LESSONS: {
     GET_BY_LEVEL: '/lessons',
-    GET_WITH_PROGRESS: '/lessons/progress',
-    COMPLETE: '/lessons/complete',
+    GET_WITH_PROGRESS: '/lessons/progress', // GET /lessons/progress?levelId=X&userId=Y
+    COMPLETE: '/lessons/complete', // POST /lessons/complete?userId=X&lessonId=Y&score=Z (mở khóa bài tiếp)
+  },
+  VOCABULARY: {
+    BY_LESSON: '/vocabulary-theories/lesson',
+    BY_ID: '/vocabulary-theories',
+  },
+  GRAMMAR: {
+    BY_LESSON: '/grammar-theories/lesson',
+    BY_ID: '/grammar-theories',
+    COMPLETE: '/grammar-theories/complete',
+  },
+  EXERCISES: {
+    BY_LESSON: '/exercises/lesson',
+    MCQ: '/mcq/exercise',
+    SENTENCE_REWRITING: '/sentence-rewriting/exercise',
+    SAVE_RESULT: '/user-exercise-results',
   },
   // Thêm các endpoints khác theo API của bạn
 };

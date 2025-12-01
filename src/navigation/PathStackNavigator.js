@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // Import screens
 import LevelSelectScreen from '../screens/learner/LevelSelectScreen';
 import LessonPathScreen from '../screens/learner/LessonPathScreen';
+import LessonDetailScreen from '../screens/learner/LessonDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,10 @@ const PathStackNavigator = () => {
       <Stack.Screen 
         name="LessonPath" 
         component={LessonPathScreen}
+      />
+      <Stack.Screen 
+        name="LessonDetail" 
+        component={LessonDetailScreen}
       />
     </Stack.Navigator>
   );

@@ -14,7 +14,9 @@ export const lessonService = {
     }
   },
 
-  // Lấy danh sách bài học theo level + kèm tiến độ user
+  // Lấy danh sách bài học theo level + kèm tiến độ user (có trạng thái khóa/mở)
+  // Backend API: GET /api/lessons/progress?levelId={levelId}&userId={userId}
+  // Returns: [{lessonId, lessonName, lessonDescription, isLessonCompleted, isLocked, ...}]
   getLessonsByLevelIdWithProgress: async (levelId, userId) => {
     try {
       const res = await apiClient.get('/lessons/progress', {
