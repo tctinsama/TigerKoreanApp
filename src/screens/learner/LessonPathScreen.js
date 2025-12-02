@@ -10,6 +10,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Platform,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -41,10 +42,20 @@ const LessonPathScreen = ({ route, navigation }) => {
   const [levelInfo, setLevelInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     loadData();
   }, [levelId]);
+
+  // Reload lessons when screen comes back into focus (after completing exercises)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadData();
+    });
+    return unsubscribe;
+  }, [navigation, levelId]);
 
   const loadData = async () => {
     try {
@@ -60,23 +71,48 @@ const LessonPathScreen = ({ route, navigation }) => {
         icon: config.icon,
       });
 
-      // Load lessons với progress nếu có userId
+      // Load lessons with progress (isLocked, isLessonCompleted từ backend)
       let lessonsData;
       if (user?.userId) {
-        lessonsData = await lessonService.getLessonsByLevelIdWithProgress(levelId, user.userId);
+        try {
+          // Gọi API GET /api/lessons/progress?levelId=X&userId=Y
+          // Backend trả về isLocked (bài bị khóa) và isLessonCompleted (bài đã xong)
+          lessonsData = await lessonService.getLessonsByLevelIdWithProgress(levelId, user.userId);
+        } catch (progressError) {
+          // Nếu API progress lỗi → dùng API thường
+          lessonsData = await lessonService.getLessonsByLevelId(levelId);
+        }
       } else {
+        // Nếu chưa login thì chỉ load danh sách bài học
         lessonsData = await lessonService.getLessonsByLevelId(levelId);
       }
 
-      // Transform data to match UI format
-      const transformedLessons = lessonsData.map((lesson, index) => ({
-        id: lesson.lessonId,
-        title: lesson.lessonName,
-        description: lesson.lessonDescription || '',
-        status: lesson.isLocked ? 'locked' : (lesson.isLessonCompleted ? 'completed' : 'available'),
-        type: 'lesson',
-        stars: lesson.stars || 0,
-      }));
+      // Transform data: Backend trả về isLocked và isLessonCompleted
+      const transformedLessons = lessonsData.map((lesson, index) => {
+        // Backend trả về: "locked" và "lessonCompleted" (không có prefix "is")
+        // Kiểm tra cả 2 format: với và không có "is"
+        const isLocked = lesson.isLocked !== undefined ? lesson.isLocked : lesson.locked;
+        const isLessonCompleted = lesson.isLessonCompleted !== undefined ? lesson.isLessonCompleted : lesson.lessonCompleted;
+        const hasProgressData = isLocked !== undefined;
+        
+        let status;
+        if (hasProgressData) {
+          // Backend có trả lock status
+          status = isLocked ? 'locked' : (isLessonCompleted ? 'completed' : 'available');
+        } else {
+          // Backend KHÔNG có progress → fallback: chỉ bài đầu mở, còn lại khóa
+          status = index === 0 ? 'available' : 'locked';
+        }
+
+        return {
+          id: lesson.lessonId,
+          title: lesson.lessonName,
+          description: lesson.lessonDescription || '',
+          status: status,
+          type: 'lesson',
+          stars: lesson.stars || 0,
+        };
+      });
 
       setLessons(transformedLessons);
     } catch (err) {
@@ -94,9 +130,18 @@ const LessonPathScreen = ({ route, navigation }) => {
       return;
     }
 
-    // Navigate to lesson detail screen
-    Alert.alert(lesson.title, 'Tính năng học bài đang phát triển');
-    // navigation.navigate('LessonDetail', { lessonId: lesson.id });
+    setSelectedLesson(lesson);
+    setModalVisible(true);
+  };
+
+  const handleStartLesson = () => {
+    setModalVisible(false);
+    if (selectedLesson) {
+      navigation.navigate('LessonDetail', {
+        lessonId: selectedLesson.id,
+        lessonTitle: selectedLesson.title,
+      });
+    }
   };
 
   const renderConnectingPath = () => {
@@ -107,45 +152,35 @@ const LessonPathScreen = ({ route, navigation }) => {
     const startY = 20;
     const spacing = 140;
     const circleRadius = 40;
-    const offset = 60;
+    const offset = 60; // Khoảng cách từ center
 
     for (let i = 1; i < lessons.length; i++) {
       const prevIndex = i - 1;
       const isEven = i % 2 === 0;
       
-      // Tính vị trí X: tâm của circle
+      // Tính tâm của các circle
       const prevX = (prevIndex % 2 === 0) ? centerX - offset : centerX + offset;
       const currX = isEven ? centerX - offset : centerX + offset;
       
-      // Tính vị trí Y: chính xác như trong render circle
-      // Circle được đặt tại: { top: yPosition, left: circleX - 40 }
-      // yPosition = startY + index * spacing
-      // Circle có height 80, nên:
-      // - Top edge ở yPosition
-      // - Bottom edge ở yPosition + 80
-      // - Center ở yPosition + 40
+      // Tâm của circle
+      const prevCenterY = startY + (prevIndex * spacing) + circleRadius;
+      const currCenterY = startY + (i * spacing) + circleRadius;
       
-      const prevYPosition = startY + (prevIndex * spacing);
-      const currYPosition = startY + (i * spacing);
+      // Điểm bắt đầu: đáy circle trên
+      const startPointY = prevCenterY + circleRadius;
+      // Điểm kết thúc: đỉnh circle dưới  
+      const endPointY = currCenterY - circleRadius;
       
-      // Thêm paddingTop từ lessonsContainer
-      const containerPaddingTop = 20;
-      
-      // Điểm bắt đầu: bottom của circle trên
-      const startPointY = prevYPosition + 80 + containerPaddingTop;
-      // Điểm kết thúc: top của circle dưới
-      const endPointY = currYPosition + containerPaddingTop;
-      
+      // Tính khoảng cách giữa 2 điểm
       const deltaY = endPointY - startPointY;
       
+      // Control points cho đường cong mượt
+      const controlY1 = startPointY + deltaY * 0.4;
+      const controlY2 = endPointY - deltaY * 0.4;
+      
       // Cubic Bezier curve
-      const controlX1 = prevX;
-      const controlY1 = startPointY + deltaY * 0.35;
-      
-      const controlX2 = currX;
-      const controlY2 = endPointY - deltaY * 0.35;
-      
-      const path = `M ${prevX},${startPointY} C ${controlX1},${controlY1} ${controlX2},${controlY2} ${currX},${endPointY}`;
+      const path = `M ${prevX},${startPointY} 
+                    C ${prevX},${controlY1} ${currX},${controlY2} ${currX},${endPointY}`;
       
       const isLocked = lessons[i].status === 'locked';
       const isCompleted = lessons[i].status === 'completed';
@@ -154,16 +189,17 @@ const LessonPathScreen = ({ route, navigation }) => {
     }
 
     return (
-      <Svg height={startY + lessons.length * spacing + 100 + 20} width={width} style={styles.svgPath}>
+      <Svg height={startY + lessons.length * spacing + 100} width={width} style={styles.svgPath}>
         {paths.map(({ path, isLocked, isCompleted, key }) => (
           <Path
             key={key}
             d={path}
-            stroke={isCompleted ? COLORS.accent : isLocked ? COLORS.disabled : COLORS.warning}
-            strokeWidth={5}
+            stroke={isCompleted ? '#4CAF50' : isLocked ? '#E0E0E0' : '#FFC107'}
+            strokeWidth={8}
             fill="none"
             strokeLinecap="round"
-            strokeDasharray={isLocked ? '8,4' : '0'}
+            strokeDasharray={isLocked ? '10,6' : '0'}
+            opacity={isLocked ? 0.5 : 1}
           />
         ))}
       </Svg>
@@ -250,7 +286,7 @@ const LessonPathScreen = ({ route, navigation }) => {
             const spacing = 140;
             const offset = 60;
             const isEven = index % 2 === 0;
-            const circleX = isEven ? centerX - offset : centerX + offset;
+            const xPosition = isEven ? centerX - offset : centerX + offset;
             const yPosition = startY + index * spacing;
             
             const isCompleted = lesson.status === 'completed';
@@ -258,60 +294,40 @@ const LessonPathScreen = ({ route, navigation }) => {
             const isLocked = lesson.status === 'locked';
 
             return (
-              <View key={lesson.id}>
-                {/* Circle */}
-                <View
-                  style={[styles.lessonNodeContainer, { top: yPosition, left: circleX - 40 }]}
+              <View
+                key={lesson.id}
+                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 40 }]}
+              >
+                <TouchableOpacity
+                  onPress={() => handleLessonPress(lesson)}
+                  disabled={isLocked}
+                  style={styles.lessonTouchable}
                 >
-                  <TouchableOpacity
-                    onPress={() => handleLessonPress(lesson)}
-                    disabled={isLocked}
-                    style={styles.lessonTouchable}
-                  >
-                    <View style={[
-                      styles.lessonCircle,
-                      isCompleted && styles.completedCircle,
-                      isAvailable && styles.availableCircle,
-                      isLocked && styles.lockedCircle,
-                    ]}>
-                      <View style={styles.innerCircle}>
-                        <MaterialCommunityIcons
-                          name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
-                          size={28}
-                          color={isLocked ? '#999' : '#FFF'}
-                        />
-                      </View>
+                  <View style={[
+                    styles.lessonCircle,
+                    isCompleted && styles.completedCircle,
+                    isAvailable && styles.availableCircle,
+                    isLocked && styles.lockedCircle,
+                  ]}>
+                    <View style={styles.innerCircle}>
+                      <MaterialCommunityIcons
+                        name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
+                        size={28}
+                        color={isLocked ? '#999' : '#FFF'}
+                      />
                     </View>
+                  </View>
 
-                    {isAvailable && index > 0 && (
-                      <View style={styles.newBadge}>
-                        <Text style={styles.newBadgeText}>MỚI</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                {/* Tiêu đề bên cạnh */}
-                <View
-                  style={[
-                    styles.lessonTitleContainer,
-                    { 
-                      top: yPosition + 15,
-                      left: isEven ? circleX + 50 : 20,
-                      right: isEven ? 20 : width - circleX + 50,
-                    }
-                  ]}
-                >
-                  <Text 
-                    style={[
-                      styles.lessonTitle,
-                      isEven ? styles.lessonTitleLeft : styles.lessonTitleRight
-                    ]} 
-                    numberOfLines={3}
-                  >
+                  <Text style={styles.lessonTitle} numberOfLines={2}>
                     {lesson.title}
                   </Text>
-                </View>
+                </TouchableOpacity>
+
+                {isAvailable && index > 0 && (
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>MỚI</Text>
+                  </View>
+                )}
               </View>
             );
           })}
@@ -319,6 +335,95 @@ const LessonPathScreen = ({ route, navigation }) => {
 
         <View style={{ height: 20 + lessons.length * 140 + 100 }} />
       </ScrollView>
+
+      {/* Lesson Detail Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* Close Button */}
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+
+            {/* Lesson Icon */}
+            <View style={styles.modalIconContainer}>
+              <View style={[
+                styles.modalIcon,
+                selectedLesson?.status === 'completed' && styles.completedIcon,
+                selectedLesson?.status === 'available' && styles.availableIcon,
+              ]}>
+                <MaterialCommunityIcons
+                  name={selectedLesson?.status === 'completed' ? "check-bold" : "book-open-variant"}
+                  size={40}
+                  color="#FFF"
+                />
+              </View>
+            </View>
+
+            {/* Lesson Title */}
+            <Text style={styles.modalTitle}>{selectedLesson?.title}</Text>
+            
+            {/* Lesson Description */}
+            {selectedLesson?.description && (
+              <Text style={styles.modalDescription}>{selectedLesson?.description}</Text>
+            )}
+
+            {/* Stats */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <MaterialCommunityIcons name="text-box-outline" size={20} color="#666" />
+                <Text style={styles.statText}>15 từ vựng</Text>
+              </View>
+              <View style={styles.statItem}>
+                <MaterialCommunityIcons name="clock-outline" size={20} color="#666" />
+                <Text style={styles.statText}>10 phút</Text>
+              </View>
+            </View>
+
+            {/* Progress (if completed) */}
+            {selectedLesson?.status === 'completed' && (
+              <View style={styles.progressInfo}>
+                <MaterialCommunityIcons name="star" size={20} color="#FFC107" />
+                <Text style={styles.progressText}>
+                  Bạn đã hoàn thành bài này với {selectedLesson?.stars || 3} sao
+                </Text>
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.startButton}
+                onPress={handleStartLesson}
+              >
+                <Text style={styles.startButtonText}>
+                  {selectedLesson?.status === 'completed' ? 'Học lại' : 'Bắt đầu'}
+                </Text>
+              </TouchableOpacity>
+
+              {selectedLesson?.status === 'completed' && (
+                <TouchableOpacity 
+                  style={styles.reviewButton}
+                  onPress={() => {
+                    setModalVisible(false);
+                    Alert.alert('Ôn tập', 'Tính năng đang phát triển');
+                  }}
+                >
+                  <Text style={styles.reviewButtonText}>Ôn tập</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -492,27 +597,7 @@ const styles = StyleSheet.create({
   },
   lessonTouchable: {
     alignItems: 'center',
-    position: 'relative',
-  },
-  lessonTitleContainer: {
-    position: 'absolute',
-    zIndex: 15,
-    paddingHorizontal: 4,
-  },
-  lessonTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    lineHeight: 20,
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  lessonTitleLeft: {
-    textAlign: 'left',
-  },
-  lessonTitleRight: {
-    textAlign: 'right',
+    width: '100%',
   },
   lessonCircle: {
     width: 80,
@@ -547,6 +632,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  lessonTitle: {
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    paddingHorizontal: 4,
+  },
   newBadge: {
     position: 'absolute',
     top: -8,
@@ -562,6 +655,139 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 40,
+    maxHeight: '80%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: '#666',
+    fontWeight: '600',
+  },
+  modalIconContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  modalIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  completedIcon: {
+    backgroundColor: '#4CAF50',
+  },
+  availableIcon: {
+    backgroundColor: '#FFC107',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 32,
+    marginBottom: 24,
+    paddingVertical: 16,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  progressInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+    padding: 12,
+    backgroundColor: '#FFF9E6',
+    borderRadius: 12,
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#F57F17',
+    fontWeight: '600',
+  },
+  modalButtons: {
+    gap: 12,
+  },
+  startButton: {
+    backgroundColor: '#FF6B35',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  startButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  reviewButton: {
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  reviewButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
