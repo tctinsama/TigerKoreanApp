@@ -14,6 +14,16 @@ const Tab = createBottomTabNavigator();
 
 // Custom Tab Bar Component
 const CustomTabBar = ({ state, descriptors, navigation }) => {
+  // Check if current route is ChatBot or ConversationPractice
+  const currentRoute = state.routes[state.index];
+  const nestedRoute = currentRoute.state?.routes[currentRoute.state?.index];
+  const shouldHideTabBar = nestedRoute?.name === 'ChatBot' || nestedRoute?.name === 'ConversationPractice';
+
+  // Hide tab bar if on ChatBot or ConversationPractice screen
+  if (shouldHideTabBar) {
+    return null;
+  }
+
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBar}>

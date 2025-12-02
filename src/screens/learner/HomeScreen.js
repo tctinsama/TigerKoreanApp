@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { LessonCard, CategoryCard } from '../../components/Cards';
+import ChatBotBubble from '../../components/ChatBotBubble';
 
 const HomeScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
@@ -33,13 +34,19 @@ const HomeScreen = ({ navigation }) => {
     { id: 1, icon: '📚', title: 'Từ vựng', subtitle: '500+ từ' },
     { id: 2, icon: '✍️', title: 'Ngữ pháp', subtitle: '50+ bài' },
     { id: 3, icon: '🎧', title: 'Luyện nghe', subtitle: '100+ audio' },
-    { id: 4, icon: '💬', title: 'Giao tiếp', subtitle: '30+ hội thoại' },
+    { id: 4, icon: '💬', title: 'Luyện nói', subtitle: 'Hội thoại AI' },
     { id: 5, icon: '🎯', title: 'Kiểm tra trình độ', subtitle: 'Placement test' },
   ];
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
+      
+      {/* ChatBot Bubble */}
+      <ChatBotBubble onPress={() => navigation.navigate('PathTab', { 
+        screen: 'ConversationTopics' 
+      })} />
+      
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -88,6 +95,8 @@ const HomeScreen = ({ navigation }) => {
                 onPress={() => {
                   if (category.id === 5) {
                     navigation.navigate('TestTab');
+                  } else if (category.id === 4) {
+                    navigation.navigate('PathTab', { screen: 'ConversationTopics' });
                   } else {
                     Alert.alert(category.title, 'Tính năng đang phát triển');
                   }
