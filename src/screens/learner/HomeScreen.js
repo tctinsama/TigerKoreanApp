@@ -39,8 +39,8 @@ const HomeScreen = ({ navigation }) => {
   ];
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={false} />
       
       {/* ChatBot Bubble */}
       <ChatBotBubble onPress={() => navigation.navigate('PathTab', { 
@@ -54,14 +54,18 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.welcome}>Xin chào, {user?.fullName || user?.email || 'User'}!</Text>
         </View>
         <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => navigation.navigate('ProfileTab')}
+          style={styles.leaderboardButton}
+          onPress={() => navigation.navigate('PathTab', { screen: 'Leaderboard' })}
         >
-          <Text style={styles.profileIcon}>👤</Text>
+          <Text style={styles.leaderboardIcon}>🏆</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollContent} 
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -129,9 +133,9 @@ const HomeScreen = ({ navigation }) => {
         </View>
 
         {/* Bottom spacing */}
-        <View style={{ height: 20 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#FF6B35',
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingTop: Platform.OS === 'ios' ? 10 : 10,
     paddingBottom: 30,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 20,
@@ -162,19 +166,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.9,
   },
-  profileButton: {
+  leaderboardButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 215, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 215, 0, 0.6)',
   },
-  profileIcon: {
+  leaderboardIcon: {
     fontSize: 24,
   },
   scrollContent: {
     flex: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: 20,
   },
   statsContainer: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,44 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  StatusBar,
+  Image,
+  TextInput,
+  ActivityIndicator,
   Platform,
+  StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
+import apiClient from '../../services/api';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, logout } = useAuth();
+  const { user: authUser, logout } = useAuth();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const userId = authUser?.userId;
+      if (!userId) return;
+
+      const response = await apiClient.get(`/users/${userId}`);
+      const userData = {
+        ...response.data,
+        dateOfBirth: response.data.dateOfBirth || 'Chưa cập nhật',
+        gender: response.data.gender || 'Chưa cập nhật',
+      };
+      setUser(userData);
+    } catch (error) {
+      console.error('Lỗi khi fetch user:', error);
+      Alert.alert('Lỗi', 'Không thể tải thông tin người dùng');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -33,13 +63,60 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const menuItems = [
-    { id: 1, icon: '👤', title: 'Thông tin cá nhân', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
-    { id: 2, icon: '⚙️', title: 'Cài đặt', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
-    { id: 3, icon: '📊', title: 'Thống kê học tập', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
-    { id: 4, icon: '🎯', title: 'Mục tiêu', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
-    { id: 5, icon: '🔔', title: 'Thông báo', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
-    { id: 6, icon: '❓', title: 'Trợ giúp', onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển') },
+    {
+      id: 1,
+      icon: '👤',
+      title: 'Thông tin cá nhân',
+      onPress: () => navigation.navigate('PersonalInfo'),
+    },
+    {
+      id: 2,
+      icon: '⚙️',
+      title: 'Cài đặt',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
+    {
+      id: 3,
+      icon: '📊',
+      title: 'Thống kê học tập',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
+    {
+      id: 4,
+      icon: '🎯',
+      title: 'Mục tiêu',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
+    {
+      id: 5,
+      icon: '🔔',
+      title: 'Thông báo',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
+    {
+      id: 6,
+      icon: '❓',
+      title: 'Trợ giúp',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
   ];
+
+  if (loading && !user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+        <Text style={styles.loadingText}>Đang tải...</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Không có thông tin người dùng</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -218,6 +295,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FF6B35',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
   },
 });
 

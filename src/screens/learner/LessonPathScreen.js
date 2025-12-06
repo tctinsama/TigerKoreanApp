@@ -309,13 +309,11 @@ const LessonPathScreen = ({ route, navigation }) => {
                     isAvailable && styles.availableCircle,
                     isLocked && styles.lockedCircle,
                   ]}>
-                    <View style={styles.innerCircle}>
-                      <MaterialCommunityIcons
-                        name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
-                        size={28}
-                        color={isLocked ? '#999' : '#FFF'}
-                      />
-                    </View>
+                    <MaterialCommunityIcons
+                      name={isCompleted ? "check-bold" : isLocked ? "lock" : "book-open-variant"}
+                      size={32}
+                      color={isCompleted ? '#4CAF50' : isLocked ? '#999' : '#FFF'}
+                    />
                   </View>
 
                   <Text style={styles.lessonTitle} numberOfLines={2}>
@@ -613,8 +611,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   completedCircle: {
-    backgroundColor: COLORS.accent,
-    borderColor: COLORS.accentDark,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#4CAF50',
+    borderWidth: 5,
   },
   availableCircle: {
     backgroundColor: COLORS.warning,

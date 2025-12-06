@@ -94,7 +94,7 @@ const LoginScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.forgotPassword}
-              onPress={() => Alert.alert('Thông báo', 'Tính năng đang phát triển')}
+              onPress={() => navigation.navigate('ForgotPassword')}
             >
               <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
             </TouchableOpacity>
@@ -114,11 +114,21 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>Chưa có tài khoản? </Text>
               <TouchableOpacity
-                onPress={() => Alert.alert('Thông báo', 'Tính năng đăng ký đang phát triển')}
+                onPress={() => navigation.navigate('SignUp')}
               >
                 <Text style={styles.registerLink}>Đăng ký ngay</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Nút test Reset Password - XÓA SAU KHI TEST XONG */}
+            <TouchableOpacity
+              style={styles.testButton}
+              onPress={() => navigation.navigate('ResetPassword', { 
+                token: '1846a00c-1bf0-494c-ad21-df66330ccb4f' 
+              })}
+            >
+              <Text style={styles.testButtonText}>🧪 Test Reset Password</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -222,6 +232,20 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     fontSize: 14,
     fontWeight: '600',
+  },
+  testButton: {
+    marginTop: 20,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  testButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 
