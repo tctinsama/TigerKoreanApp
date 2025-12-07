@@ -39,26 +39,28 @@ const HomeScreen = ({ navigation }) => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={false} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
       
       {/* ChatBot Bubble */}
-      <ChatBotBubble onPress={() => navigation.navigate('PathTab', { 
-        screen: 'ConversationTopics' 
-      })} />
+      <ChatBotBubble onPress={() => navigation.navigate('ConversationTopics')} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>🐯 TigerKorean</Text>
-          <Text style={styles.welcome}>Xin chào, {user?.fullName || user?.email || 'User'}!</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.leaderboardButton}
-          onPress={() => navigation.navigate('PathTab', { screen: 'Leaderboard' })}
-        >
-          <Text style={styles.leaderboardIcon}>🏆</Text>
-        </TouchableOpacity>
+      {/* Header với SafeAreaView cho phần content */}
+      <View style={styles.headerWrapper}>
+        <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.title}>🐯 TigerKorean</Text>
+              <Text style={styles.welcome}>Xin chào, {user?.fullName || user?.email || 'User'}!</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.leaderboardButton}
+              onPress={() => navigation.navigate('PathTab', { screen: 'Leaderboard' })}
+            >
+              <Text style={styles.leaderboardIcon}>🏆</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </View>
 
       <ScrollView 
@@ -100,7 +102,7 @@ const HomeScreen = ({ navigation }) => {
                   if (category.id === 5) {
                     navigation.navigate('TestTab');
                   } else if (category.id === 4) {
-                    navigation.navigate('PathTab', { screen: 'ConversationTopics' });
+                    navigation.navigate('ConversationTopics');
                   } else {
                     Alert.alert(category.title, 'Tính năng đang phát triển');
                   }
@@ -135,7 +137,7 @@ const HomeScreen = ({ navigation }) => {
         {/* Bottom spacing */}
         <View style={{ height: 100 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -144,9 +146,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  headerWrapper: {
+    backgroundColor: '#FF6B35',
+  },
+  headerSafeArea: {
+    backgroundColor: '#FF6B35',
+  },
   header: {
     backgroundColor: '#FF6B35',
-    paddingTop: Platform.OS === 'ios' ? 10 : 10,
     paddingBottom: 30,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 20,

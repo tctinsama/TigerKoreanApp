@@ -14,12 +14,13 @@ const Tab = createBottomTabNavigator();
 
 // Custom Tab Bar Component
 const CustomTabBar = ({ state, descriptors, navigation }) => {
-  // Check if current route is ChatBot or ConversationPractice
+  // Tab bar always visible since ConversationTopics/Practice are now in AppNavigator
   const currentRoute = state.routes[state.index];
   const nestedRoute = currentRoute.state?.routes[currentRoute.state?.index];
-  const shouldHideTabBar = nestedRoute?.name === 'ChatBot' || nestedRoute?.name === 'ConversationPractice';
+  
+  // Hide tab bar only if nested route exists and matches specific screens
+  const shouldHideTabBar = nestedRoute?.name === 'ChatBot';
 
-  // Hide tab bar if on ChatBot or ConversationPractice screen
   if (shouldHideTabBar) {
     return null;
   }

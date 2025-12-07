@@ -11,6 +11,8 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import LearnerTabNavigator from './LearnerTabNavigator';
 import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
+import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
+import ConversationPracticeScreen from '../screens/learner/ConversationPracticeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -66,6 +68,22 @@ const AppNavigator = () => {
           <>
             <Stack.Screen name="MainTabs" component={LearnerTabNavigator} />
             <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+            <Stack.Screen 
+              name="ConversationTopics" 
+              component={ConversationTopicsScreen}
+              options={{
+                animation: 'slide_from_right',
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen 
+              name="ConversationPractice" 
+              component={ConversationPracticeScreen}
+              options={{
+                animation: 'slide_from_bottom',
+                presentation: 'card',
+              }}
+            />
           </>
         ) : (
           // Màn hình cho người dùng chưa đăng nhập

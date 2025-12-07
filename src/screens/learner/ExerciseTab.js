@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import exerciseService from '../../services/exerciseService';
 import { lessonService } from '../../services/lessonService';
@@ -298,6 +299,9 @@ const ExerciseTab = ({ route, navigation }) => {
             Tất cả câu hỏi đã được làm đúng, bạn đã hoàn thành bài tập này.
           </Text>
         </View>
+        
+        {/* Bottom Spacing for Tab Bar */}
+        <View style={{ height: 100 }} />
       </ScrollView>
     );
   }
@@ -329,6 +333,9 @@ const ExerciseTab = ({ route, navigation }) => {
           onNext={handleAnswer}
         />
       )}
+      
+      {/* Bottom Spacing for Tab Bar */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 };
@@ -340,6 +347,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    paddingBottom: 0,
   },
   centerContainer: {
     flex: 1,

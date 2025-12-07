@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   PanResponder,
+  Image,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS } from '../constants/colors';
@@ -155,7 +156,11 @@ const ChatBotBubble = ({ onPress }) => {
         />
         
         <View style={styles.bubbleContent}>
-          <MaterialCommunityIcons name="robot" size={32} color="#FFF" />
+          <Image 
+            source={require('../../assets/imagechatbot.jpg')} 
+            style={styles.tigerImage}
+            resizeMode="cover"
+          />
         </View>
 
         {/* Badge notification */}
@@ -170,23 +175,23 @@ const ChatBotBubble = ({ onPress }) => {
 const styles = StyleSheet.create({
   bubble: {
     position: 'absolute',
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     zIndex: 1000,
   },
   pulseCircle: {
     position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: COLORS.primary,
     opacity: 0.3,
   },
   bubbleContent: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.primary,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -194,6 +199,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  tigerImage: {
+    width: '120%',
+    height: '120%',
+    position: 'absolute',
+    top: '-10%',
+    left: '-10%',
   },
   badge: {
     position: 'absolute',

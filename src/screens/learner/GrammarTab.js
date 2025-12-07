@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import grammarService from '../../services/grammarService';
@@ -235,7 +236,7 @@ const GrammarTab = ({ route, navigation }) => {
                   {/* Actions */}
                   <View style={styles.actionsContainer}>
                     <View style={styles.actionsLeft}>
-                      <TouchableOpacity style={[styles.actionButton, { marginRight: 8 }]}>
+                      <TouchableOpacity style={styles.actionButton}>
                         <MaterialCommunityIcons name="notebook-edit" size={16} color="#3B82F6" style={{ marginRight: 4 }} />
                         <Text style={styles.actionButtonText}>Ghi chú</Text>
                       </TouchableOpacity>
@@ -295,6 +296,9 @@ const GrammarTab = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       )}
+      
+      {/* Bottom Spacing for Tab Bar */}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 };
@@ -306,6 +310,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    paddingBottom: 0,
   },
   centerContainer: {
     flex: 1,
@@ -518,9 +523,14 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   actionsLeft: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    flex: 1,
   },
   actionButton: {
     flexDirection: 'row',

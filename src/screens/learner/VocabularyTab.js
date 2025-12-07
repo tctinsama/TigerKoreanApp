@@ -10,6 +10,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import vocabularyService from '../../services/vocabularyService';
 
@@ -232,7 +233,10 @@ const VocabularyTab = ({ route }) => {
           </TouchableOpacity>
         ))}
       </View>
-    </ScrollView>
+      
+      {/* Bottom Spacing for Tab Bar */}
+      <View style={{ height: 100 }} />
+      </ScrollView>
   );
 };
 
@@ -243,6 +247,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    paddingBottom: 0,
   },
   centerContainer: {
     flex: 1,

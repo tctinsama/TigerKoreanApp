@@ -5,9 +5,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LevelSelectScreen from '../screens/learner/LevelSelectScreen';
 import LessonPathScreen from '../screens/learner/LessonPathScreen';
 import LessonDetailScreen from '../screens/learner/LessonDetailScreen';
-import ChatBotScreen from '../screens/learner/ChatBotScreen';
-import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
-import ConversationPracticeScreen from '../screens/learner/ConversationPracticeScreen';
 import LeaderboardScreen from '../screens/learner/LeaderboardScreen';
 import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
 
@@ -32,28 +29,6 @@ const PathStackNavigator = () => {
       <Stack.Screen 
         name="LessonDetail" 
         component={LessonDetailScreen}
-      />
-      <Stack.Screen 
-        name="ChatBot" 
-        component={ChatBotScreen}
-        options={{
-          animation: 'slide_from_bottom',
-          presentation: 'modal',
-        }}
-      />
-      <Stack.Screen 
-        name="ConversationTopics" 
-        component={ConversationTopicsScreen}
-        options={{
-          animation: 'slide_from_right',
-        }}
-      />
-      <Stack.Screen 
-        name="ConversationPractice" 
-        component={ConversationPracticeScreen}
-        options={{
-          animation: 'slide_from_bottom',
-        }}
       />
       <Stack.Screen 
         name="Leaderboard" 

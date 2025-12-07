@@ -296,12 +296,16 @@ const LessonPathScreen = ({ route, navigation }) => {
             return (
               <View
                 key={lesson.id}
-                style={[styles.lessonNodeContainer, { top: yPosition, left: xPosition - 40 }]}
+                style={[styles.lessonNodeContainer, { 
+                  top: yPosition, 
+                  left: isEven ? 20 : xPosition + 50,
+                  width: isEven ? xPosition - 30 : width - xPosition - 70
+                }]}
               >
                 <TouchableOpacity
                   onPress={() => handleLessonPress(lesson)}
                   disabled={isLocked}
-                  style={styles.lessonTouchable}
+                  style={[styles.lessonTouchable, isEven ? styles.lessonTouchableRow : styles.lessonTouchableRowReverse]}
                 >
                   <View style={[
                     styles.lessonCircle,
@@ -316,7 +320,7 @@ const LessonPathScreen = ({ route, navigation }) => {
                     />
                   </View>
 
-                  <Text style={styles.lessonTitle} numberOfLines={2}>
+                  <Text style={[styles.lessonTitle, isEven ? styles.lessonTitleLeft : styles.lessonTitleRight]} numberOfLines={2}>
                     {lesson.title}
                   </Text>
                 </TouchableOpacity>
@@ -589,13 +593,18 @@ const styles = StyleSheet.create({
   },
   lessonNodeContainer: {
     position: 'absolute',
-    width: 80,
-    alignItems: 'center',
     zIndex: 10,
   },
   lessonTouchable: {
-    alignItems: 'center',
     width: '100%',
+  },
+  lessonTouchableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  lessonTouchableRowReverse: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
   },
   lessonCircle: {
     width: 80,
@@ -632,17 +641,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   lessonTitle: {
-    marginTop: 8,
-    fontSize: 12,
-    fontWeight: '600',
+    flex: 1,
+    fontSize: 13,
+    fontWeight: 'bold',
     color: COLORS.text,
-    textAlign: 'center',
-    paddingHorizontal: 4,
+    lineHeight: 18,
+    paddingHorizontal: 12,
+  },
+  lessonTitleLeft: {
+    textAlign: 'left',
+  },
+  lessonTitleRight: {
+    textAlign: 'right',
   },
   newBadge: {
     position: 'absolute',
     top: -8,
-    right: -8,
+    left: isEven ? 56 : -8,
     backgroundColor: COLORS.error,
     paddingHorizontal: 8,
     paddingVertical: 4,

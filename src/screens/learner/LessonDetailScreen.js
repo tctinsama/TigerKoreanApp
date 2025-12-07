@@ -7,6 +7,7 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Import các component học tập
 import VocabularyTab from './VocabularyTab';
@@ -31,11 +32,12 @@ const LessonDetailScreen = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={false} />
-      
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFF" translucent={true} />
+        
+        {/* Header */}
+        <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -85,14 +87,18 @@ const LessonDetailScreen = ({ route, navigation }) => {
       {/* Tab Content */}
       {renderTabContent()}
     </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-    paddingTop: Platform.OS === 'android' ? 0 : 0,
   },
   header: {
     flexDirection: 'row',
