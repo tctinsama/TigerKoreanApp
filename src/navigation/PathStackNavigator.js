@@ -8,6 +8,8 @@ import LessonDetailScreen from '../screens/learner/LessonDetailScreen';
 import ChatBotScreen from '../screens/learner/ChatBotScreen';
 import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
 import ConversationPracticeScreen from '../screens/learner/ConversationPracticeScreen';
+import LeaderboardScreen from '../screens/learner/LeaderboardScreen';
+import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,9 +32,6 @@ const PathStackNavigator = () => {
       <Stack.Screen 
         name="LessonDetail" 
         component={LessonDetailScreen}
-        options={{
-          animation: 'slide_from_right',
-        }}
       />
       <Stack.Screen 
         name="ChatBot" 
@@ -54,6 +53,21 @@ const PathStackNavigator = () => {
         component={ConversationPracticeScreen}
         options={{
           animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen 
+        name="Leaderboard" 
+        component={LeaderboardScreen}
+        options={{
+          animation: 'slide_from_bottom',
+          presentation: 'modal',
+        }}
+      />
+      <Stack.Screen 
+        name="PersonalInfo" 
+        component={PersonalInfoScreen}
+        options={{
+          animation: 'slide_from_right',
         }}
       />
     </Stack.Navigator>
