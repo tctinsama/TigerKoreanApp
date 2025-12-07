@@ -4,10 +4,10 @@ const API_CONFIG = {
   // Chọn BASE_URL phù hợp với môi trường của bạn:
   
   // 1. Máy ảo Android Studio:
-  BASE_URL: 'http://10.0.2.2:8080/api',
+  // BASE_URL: 'http://10.0.2.2:8080/api',
   
   // 2. Điện thoại thật qua Expo Go (IP máy tính của bạn):
-  // BASE_URL: 'http://192.168.1.63:8080/api',
+  BASE_URL: 'http://192.168.1.244:8080/api',
   
   // 3. Localhost (iOS simulator hoặc development):
   //BASE_URL: 'http://localhost:8080/api',
