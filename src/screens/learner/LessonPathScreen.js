@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Platform,
   Modal,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -150,15 +151,15 @@ const LessonPathScreen = ({ route, navigation }) => {
     const paths = [];
     const centerX = width / 2;
     const startY = 20;
-    const spacing = 140;
+    const spacing = 160;
     const circleRadius = 40;
-    const offset = 60; // Khoảng cách từ center
+    const offset = 80;
 
     for (let i = 1; i < lessons.length; i++) {
       const prevIndex = i - 1;
       const isEven = i % 2 === 0;
       
-      // Tính tâm của các circle
+      // Tính tâm của các circle - Phải khớp với vị trí thực tế của hình tròn
       const prevX = (prevIndex % 2 === 0) ? centerX - offset : centerX + offset;
       const currX = isEven ? centerX - offset : centerX + offset;
       
@@ -166,17 +167,17 @@ const LessonPathScreen = ({ route, navigation }) => {
       const prevCenterY = startY + (prevIndex * spacing) + circleRadius;
       const currCenterY = startY + (i * spacing) + circleRadius;
       
-      // Điểm bắt đầu: đáy circle trên
-      const startPointY = prevCenterY + circleRadius;
-      // Điểm kết thúc: đỉnh circle dưới  
-      const endPointY = currCenterY - circleRadius;
+      // Điểm bắt đầu: sát mép đáy circle trên (không cộng circleRadius nữa)
+      const startPointY = prevCenterY + circleRadius - 4;
+      // Điểm kết thúc: sát mép đỉnh circle dưới (không trừ circleRadius nữa)
+      const endPointY = currCenterY - circleRadius + 4;
       
       // Tính khoảng cách giữa 2 điểm
       const deltaY = endPointY - startPointY;
       
-      // Control points cho đường cong mượt
-      const controlY1 = startPointY + deltaY * 0.4;
-      const controlY2 = endPointY - deltaY * 0.4;
+      // Control points cho đường cong mượt hơn
+      const controlY1 = startPointY + deltaY * 0.3;
+      const controlY2 = endPointY - deltaY * 0.3;
       
       // Cubic Bezier curve
       const path = `M ${prevX},${startPointY} 
@@ -195,11 +196,11 @@ const LessonPathScreen = ({ route, navigation }) => {
             key={key}
             d={path}
             stroke={isCompleted ? '#4CAF50' : isLocked ? '#E0E0E0' : '#FFC107'}
-            strokeWidth={8}
+            strokeWidth={6}
             fill="none"
             strokeLinecap="round"
-            strokeDasharray={isLocked ? '10,6' : '0'}
-            opacity={isLocked ? 0.5 : 1}
+            strokeDasharray={isCompleted ? '0' : '10,8'}
+            opacity={isLocked ? 0.4 : 1}
           />
         ))}
       </Svg>
@@ -272,21 +273,26 @@ const LessonPathScreen = ({ route, navigation }) => {
       </LinearGradient>
 
       {/* Lesson Path */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <ImageBackground
+        source={require('../../../assets/bgpath.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       >
-        {renderConnectingPath()}
+        <View style={styles.backgroundOverlay} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {renderConnectingPath()}
 
         <View style={styles.lessonsContainer}>
           {lessons.map((lesson, index) => {
             const centerX = width / 2;
             const startY = 20;
-            const spacing = 140;
-            const offset = 60;
+            const spacing = 160;
+            const offset = 80;
             const isEven = index % 2 === 0;
-            const xPosition = isEven ? centerX - offset : centerX + offset;
             const yPosition = startY + index * spacing;
             
             const isCompleted = lesson.status === 'completed';
@@ -297,17 +303,23 @@ const LessonPathScreen = ({ route, navigation }) => {
               <View
                 key={lesson.id}
                 style={[styles.lessonNodeContainer, { 
-                  top: yPosition, 
-                  left: isEven ? 20 : xPosition + 50,
-                  width: isEven ? xPosition - 30 : width - xPosition - 70
+                  top: yPosition,
+                  left: 0,
+                  width: width,
+                  paddingHorizontal: 20,
                 }]}
               >
-                <TouchableOpacity
-                  onPress={() => handleLessonPress(lesson)}
-                  disabled={isLocked}
-                  style={[styles.lessonTouchable, isEven ? styles.lessonTouchableRow : styles.lessonTouchableRowReverse]}
-                >
-                  <View style={[
+                <View style={[
+                  styles.lessonContentWrapper,
+                  isEven ? { justifyContent: 'flex-start' } : { justifyContent: 'flex-end' }
+                ]}>
+                  <TouchableOpacity
+                    onPress={() => handleLessonPress(lesson)}
+                    disabled={isLocked}
+                    style={[styles.lessonTouchable, isEven ? styles.lessonTouchableRow : styles.lessonTouchableRowReverse]}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[
                     styles.lessonCircle,
                     isCompleted && styles.completedCircle,
                     isAvailable && styles.availableCircle,
@@ -326,17 +338,19 @@ const LessonPathScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
 
                 {isAvailable && index > 0 && (
-                  <View style={styles.newBadge}>
+                  <View style={[styles.newBadge, isEven ? { left: 56 } : { right: 56 }]}>
                     <Text style={styles.newBadgeText}>MỚI</Text>
                   </View>
                 )}
+                </View>
               </View>
             );
           })}
         </View>
 
-        <View style={{ height: 20 + lessons.length * 140 + 100 }} />
-      </ScrollView>
+        <View style={{ height: 20 + lessons.length * 160 + 100 }} />
+        </ScrollView>
+      </ImageBackground>
 
       {/* Lesson Detail Modal */}
       <Modal
@@ -434,6 +448,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   centerContainer: {
     flex: 1,
@@ -595,8 +617,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 10,
   },
+  lessonContentWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
   lessonTouchable: {
-    width: '100%',
+    maxWidth: width * 0.6,
   },
   lessonTouchableRow: {
     flexDirection: 'row',
@@ -613,11 +640,12 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 5,
   },
   completedCircle: {
     backgroundColor: '#FFFFFF',
@@ -657,13 +685,13 @@ const styles = StyleSheet.create({
   newBadge: {
     position: 'absolute',
     top: -8,
-    left: isEven ? 56 : -8,
     backgroundColor: COLORS.error,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: COLORS.surface,
+    zIndex: 20,
   },
   newBadgeText: {
     color: COLORS.surface,

@@ -132,7 +132,11 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.email}>{user?.email || 'user@example.com'}</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
@@ -171,7 +175,7 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.logoutText}>Đăng xuất</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 30 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );
@@ -217,6 +221,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   statsContainer: {
     flexDirection: 'row',

@@ -119,16 +119,6 @@ const LoginScreen = ({ navigation }) => {
                 <Text style={styles.registerLink}>Đăng ký ngay</Text>
               </TouchableOpacity>
             </View>
-
-            {/* Nút test Reset Password - XÓA SAU KHI TEST XONG */}
-            <TouchableOpacity
-              style={styles.testButton}
-              onPress={() => navigation.navigate('ResetPassword', { 
-                token: '1846a00c-1bf0-494c-ad21-df66330ccb4f' 
-              })}
-            >
-              <Text style={styles.testButtonText}>🧪 Test Reset Password</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -232,20 +222,6 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     fontSize: 14,
     fontWeight: '600',
-  },
-  testButton: {
-    marginTop: 20,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  testButtonText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

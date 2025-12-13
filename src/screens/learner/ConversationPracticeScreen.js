@@ -140,19 +140,28 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       await Speech.stop();
       setSpeakingMessageId(messageId);
       
-      console.log('🔊 Starting TTS:', text);
+      // Remove emojis and special characters that may cause TTS issues
+      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+      
+      if (!cleanText) {
+        console.log('⚠️ No text to speak after cleaning');
+        setSpeakingMessageId(null);
+        return;
+      }
+      
+      console.log('🔊 Starting TTS:', cleanText);
       
       // Check available voices
       const voices = await Speech.getAvailableVoicesAsync();
       const koreanVoices = voices.filter(v => v.language.startsWith('ko'));
       console.log('🎤 Korean voices available:', koreanVoices.length, koreanVoices.map(v => v.name));
       
-      await Speech.speak(text, {
+      await Speech.speak(cleanText, {
         language: 'ko-KR',
         pitch: 1.0,
         rate: 0.85, // Slower for learning
         onDone: () => {
-          console.log('✅ TTS done');
+          console.log('✅ TTS completed successfully');
           setSpeakingMessageId(null);
         },
         onStopped: () => {
