@@ -16,16 +16,18 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/colors';
 import chatService from '../../services/chatService';
 import { AuthContext } from '../../contexts/AuthContext';
-import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import API_CONFIG from '../../constants/config';
 
-// Quick phrases theo scenario
+// Quick phrases theo scenario - Khớp với backend
 const QUICK_PHRASES = {
-  introduction: ['안녕하세요!', '처음 뵙겠습니다', '이름이 뭐예요?', '어디서 왔어요?', '반갑습니다'],
-  restaurant: ['안녕하세요!', '메뉴 추천해 주세요', '이것은 얼마예요?', '계산해 주세요', '감사합니다'],
-  shopping: ['안녕하세요!', '이것 얼마예요?', '더 큰 사이즈 있어요?', '카드로 결제할게요', '감사합니다'],
-  direction: ['실례합니다', '지하철역이 어디예요?', '얼마나 걸려요?', '감사합니다', '안녕히 계세요'],
-  daily: ['안녕!', '오늘 어때?', '뭐 해?', '날씨 좋다', '나중에 봐']
+  introduction: ['안녕하세요!', '처음 뵙겠습니다', '저는 [이름]이에요', '어디서 왔어요?', '반갑습니다'],
+  restaurant: ['메뉴 추천해 주세요', '김치찌개 얼마예요?', '주문할게요', '계산해 주세요', '감사합니다'],
+  shopping: ['이것 얼마예요?', '더 큰 사이즈 있어요?', '입어봐도 돼요?', '카드로 결제할게요', '감사합니다'],
+  direction: ['명동 어떻게 가요?', '지하철역이 어디예요?', '얼마나 걸려요?', '택시 타도 돼요?', '감사합니다'],
+  daily: ['오늘 어때요?', '뭐 하고 있어요?', '날씨 좋네요', '주말에 뭐 해요?', '나중에 봐요']
 };
 
 const ConversationPracticeScreen = ({ route, navigation }) => {
@@ -37,8 +39,8 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [expandedMessages, setExpandedMessages] = useState({});
-  const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [speakingMessageId, setSpeakingMessageId] = useState(null);
   const [showQuickPhrases, setShowQuickPhrases] = useState(true);
@@ -66,7 +68,7 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
     (async () => {
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Quyền truy cập', 'Cần quyền microphone để ghi âm');
+        Alert.alert('Quyền truy cập', 'Cần quyền microphone để ghi âm và nhận diện giọng nói');
       }
     })();
   }, []);
@@ -144,28 +146,18 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
       
       if (!cleanText) {
-        console.log('⚠️ No text to speak after cleaning');
         setSpeakingMessageId(null);
         return;
       }
-      
-      console.log('🔊 Starting TTS:', cleanText);
-      
-      // Check available voices
-      const voices = await Speech.getAvailableVoicesAsync();
-      const koreanVoices = voices.filter(v => v.language.startsWith('ko'));
-      console.log('🎤 Korean voices available:', koreanVoices.length, koreanVoices.map(v => v.name));
       
       await Speech.speak(cleanText, {
         language: 'ko-KR',
         pitch: 1.0,
         rate: 0.85, // Slower for learning
         onDone: () => {
-          console.log('✅ TTS completed successfully');
           setSpeakingMessageId(null);
         },
         onStopped: () => {
-          console.log('⏹ TTS stopped');
           setSpeakingMessageId(null);
         },
         onError: (error) => {
@@ -205,7 +197,42 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
     }, 100);
   };
 
-  // Start recording
+  // Transcribe audio using Groq Whisper API
+  const transcribeAudio = async (audioUri) => {
+    try {
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('file', {
+        uri: audioUri,
+        type: 'audio/m4a',
+        name: 'recording.m4a',
+      });
+      formData.append('model', 'whisper-large-v3');
+      formData.append('language', 'ko'); // Korean
+      formData.append('response_format', 'json');
+      
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_CONFIG.GROQ_API_KEY}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (data.text) {
+        return data.text;
+      } else {
+        throw new Error('No transcription text received');
+      }
+    } catch (error) {
+      console.error('❌ Transcription error:', error);
+      throw error;
+    }
+  };
+
+  // Start recording with expo-av
   const startRecording = async () => {
     try {
       await Audio.setAudioModeAsync({
@@ -221,37 +248,47 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
-      Alert.alert('Lỗi', 'Không thể bắt đầu ghi âm');
+      Alert.alert('Lỗi', 'Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền microphone.');
     }
   };
 
-  // Stop recording
+  // Stop recording and transcribe
   const stopRecording = async () => {
     if (!recording) return;
 
-    setIsRecording(false);
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    setRecording(null);
+    try {
+      setIsRecording(false);
+      setIsLoading(true);
+      
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setRecording(null);
 
-    // Note: Speech-to-text would require additional API
-    Alert.alert('Ghi âm hoàn tất', 'Tính năng chuyển giọng nói thành text đang phát triển. Vui lòng nhập bằng bàn phím.');
-  };
-
-  // Map topic.id (number) to scenario string
-  const scenarioMap = {
-    1: 'introduction',
-    2: 'restaurant',
-    3: 'shopping',
-    4: 'direction',
-    5: 'daily',
-    6: 'daily',
-    7: 'daily',
-    8: 'daily',
-    9: 'daily',
-    10: 'direction',
-    11: 'daily',
-    12: 'daily',
+      // Transcribe with Groq Whisper
+      const transcribedText = await transcribeAudio(uri);
+      
+      if (transcribedText) {
+        const cleanText = transcribedText.trim();
+        // Hiển thị text vào input luôn
+        setInputText(cleanText);
+        setIsLoading(false);
+        
+        // Focus vào input để user có thể sửa nếu muốn
+        // Sau 1 giây, tự động gửi tin nhắn
+        setTimeout(() => {
+          if (cleanText) {
+            handleSendMessageWithText(cleanText);
+          }
+        }, 800);
+      } else {
+        setIsLoading(false);
+        Alert.alert('Lỗi', 'Không thể nhận dạng giọng nói. Vui lòng thử lại.');
+      }
+    } catch (error) {
+      console.error('Stop recording error:', error);
+      setIsLoading(false);
+      Alert.alert('Lỗi', 'Không thể xử lý file ghi âm. Vui lòng thử lại.');
+    }
   };
 
   // Start conversation
@@ -260,24 +297,20 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
     setIsLoading(true);
 
     try {
-      const scenario = scenarioMap[topic.id] || 'daily';
+      const scenario = topic.id; // topic.id is now the scenario string
       const userId = user?.userId || 1; // Fallback to 1 if no user
-
-      console.log('Creating conversation:', { userId, scenario, level });
 
       // 1. Tạo conversation mới qua backend
       const conversation = await chatService.createConversation(userId, scenario, level);
-      console.log('Conversation created:', conversation);
       setConversationId(conversation.conversationId);
 
-      // 2. Gửi tin nhắn đầu tiên để AI bắt đầu
+      // 2. Gửi tin nhắn đầu tiên bằng tiếng Hàn để AI bắt đầu
       const responsePair = await chatService.sendMessage(
         conversation.conversationId,
-        'Xin chào! Hãy bắt đầu cuộc hội thoại với tôi.'
+        '안녕하세요!'
       );
-      console.log('AI response received:', responsePair);
 
-      // 3. Hiển thị tin nhắn AI
+      // 3. Hiển thị tin nhắn AI đầu tiên
       const aiMessage = {
         id: responsePair.aiMessage.messageId.toString(),
         text: responsePair.aiMessage.content,
@@ -322,15 +355,11 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
     setIsLoading(true);
 
     try {
-      console.log('Sending message to backend:', { conversationId, text: userMessage.text });
-      
       // Gọi backend để gửi tin nhắn
       const responsePair = await chatService.sendMessage(
         conversationId,
         userMessage.text
       );
-      
-      console.log('Received response from backend:', responsePair);
 
       // Hiển thị tin nhắn AI với translation
       const aiMessage = {
@@ -519,7 +548,9 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
           {isLoading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={topic.color} />
-              <Text style={styles.loadingText}>AI đang trả lời...</Text>
+              <Text style={styles.loadingText}>
+                {isRecording ? '🎤 Đang nhận diện giọng nói...' : 'AI đang trả lời...'}
+              </Text>
             </View>
           )}
 
@@ -528,7 +559,7 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
             <View style={styles.quickPhrasesContainer}>
               <Text style={styles.quickPhrasesTitle}>💬 Gợi ý:</Text>
               <View style={styles.quickPhrasesRow}>
-                {(QUICK_PHRASES[scenarioMap[topic.id] || 'daily'] || QUICK_PHRASES.daily).map((phrase, index) => (
+                {(QUICK_PHRASES[topic.id] || QUICK_PHRASES.daily).map((phrase, index) => (
                   <TouchableOpacity
                     key={index}
                     style={styles.quickPhraseButton}
@@ -542,10 +573,10 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
             </View>
           )}
 
+          {/* Input area with keyboard handling */}
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-            style={styles.keyboardAvoid}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
           >
             <View style={styles.inputContainer}>
               <TouchableOpacity
@@ -870,15 +901,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontStyle: 'italic',
   },
-  keyboardAvoid: {
-    width: '100%',
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 8,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 12,
     backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,

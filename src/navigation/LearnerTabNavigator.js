@@ -15,15 +15,7 @@ const Tab = createBottomTabNavigator();
 // Custom Tab Bar Component
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   // Tab bar always visible since ConversationTopics/Practice are now in AppNavigator
-  const currentRoute = state.routes[state.index];
-  const nestedRoute = currentRoute.state?.routes[currentRoute.state?.index];
-  
-  // Hide tab bar only if nested route exists and matches specific screens
-  const shouldHideTabBar = nestedRoute?.name === 'ChatBot';
-
-  if (shouldHideTabBar) {
-    return null;
-  }
+  // No need to hide tab bar for any nested routes anymore
 
   return (
     <View style={styles.tabBarContainer}>
