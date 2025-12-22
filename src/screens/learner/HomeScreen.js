@@ -280,7 +280,7 @@ const HomeScreen = ({ navigation }) => {
 
         <View style={{ height: 100 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
