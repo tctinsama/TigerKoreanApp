@@ -7,6 +7,7 @@ import { COLORS } from '../constants/colors';
 // Import các màn hình
 import HomeScreen from '../screens/learner/HomeScreen';
 import PlacementTestScreen from '../screens/PlacementTestScreen';
+import TestStackNavigator from './TestStackNavigator';
 import PathStackNavigator from './PathStackNavigator';
 import ProfileScreen from '../screens/learner/ProfileScreen';
 
@@ -14,8 +15,15 @@ const Tab = createBottomTabNavigator();
 
 // Custom Tab Bar Component
 const CustomTabBar = ({ state, descriptors, navigation }) => {
-  // Tab bar always visible since ConversationTopics/Practice are now in AppNavigator
-  // No need to hide tab bar for any nested routes anymore
+  // Check if current route is ChatBot or ConversationPractice
+  const currentRoute = state.routes[state.index];
+  const nestedRoute = currentRoute.state?.routes[currentRoute.state?.index];
+  const shouldHideTabBar = nestedRoute?.name === 'ChatBot' || nestedRoute?.name === 'ConversationPractice';
+
+  // Hide tab bar if on ChatBot or ConversationPractice screen
+  if (shouldHideTabBar) {
+    return null;
+  }
 
   return (
     <View style={styles.tabBarContainer}>
@@ -95,7 +103,7 @@ const LearnerTabNavigator = () => {
       
       <Tab.Screen 
         name="TestTab" 
-        component={PlacementTestScreen}
+        component={TestStackNavigator}
       />
       
       <Tab.Screen 
