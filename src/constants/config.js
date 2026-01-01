@@ -7,7 +7,7 @@ const API_CONFIG = {
   // BASE_URL: 'http://10.0.2.2:8080/api',
   
   // 2. Điện thoại thật qua Expo Go (IP máy tính của bạn):
-  BASE_URL: 'http://192.168.22.114:8080/api',
+  BASE_URL: 'http://192.168.1.154:8080/api',
   
   // 3. Localhost (iOS simulator hoặc development):
   //BASE_URL: 'http://localhost:8080/api',
@@ -20,7 +20,7 @@ const API_CONFIG = {
   GOOGLE_CLIENT_ID: '163931303040-f2d5b0sr9ervddgg3eceuaqqhvoifvro.apps.googleusercontent.com',
   
   // Groq AI API Key
-  GROQ_API_KEY: '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',
+  GROQ_API_KEY: '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',
   
   TIMEOUT: 30000, // 30 seconds
 };

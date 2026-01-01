@@ -18,7 +18,7 @@ import chatService from '../../services/chatService';
 import { AuthContext } from '../../contexts/AuthContext';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from '../../constants/config';
 
 // Quick phrases theo scenario - Khớp với backend
@@ -200,6 +200,14 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
   // Transcribe audio using Groq Whisper API
   const transcribeAudio = async (audioUri) => {
     try {
+      // Check if audio file exists and has content
+      const fileInfo = await FileSystem.getInfoAsync(audioUri);
+      console.log('📁 Audio file info:', fileInfo);
+      
+      if (!fileInfo.exists || fileInfo.size < 1000) {
+        throw new Error('Audio file is empty or too short. Please speak louder or longer.');
+      }
+
       // Create FormData for multipart upload
       const formData = new FormData();
       formData.append('file', {
@@ -211,6 +219,8 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       formData.append('language', 'ko'); // Korean
       formData.append('response_format', 'json');
       
+      console.log('🎤 Sending audio to Groq Whisper API...');
+      
       const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
         headers: {
@@ -220,11 +230,18 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       });
 
       const data = await response.json();
+      console.log('📝 Groq API response:', JSON.stringify(data));
       
-      if (data.text) {
+      // Check for API errors
+      if (!response.ok) {
+        const errorMessage = data.error?.message || `API error: ${response.status}`;
+        throw new Error(errorMessage);
+      }
+      
+      if (data.text && data.text.trim()) {
         return data.text;
       } else {
-        throw new Error('No transcription text received');
+        throw new Error('Không nhận dạng được giọng nói. Vui lòng nói rõ hơn.');
       }
     } catch (error) {
       console.error('❌ Transcription error:', error);
@@ -262,6 +279,7 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
+      console.log('🎙️ Recording saved to:', uri);
       setRecording(null);
 
       // Transcribe with Groq Whisper
@@ -269,6 +287,7 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
       
       if (transcribedText) {
         const cleanText = transcribedText.trim();
+        console.log('✅ Transcribed text:', cleanText);
         // Hiển thị text vào input luôn
         setInputText(cleanText);
         setIsLoading(false);
@@ -287,7 +306,8 @@ const ConversationPracticeScreen = ({ route, navigation }) => {
     } catch (error) {
       console.error('Stop recording error:', error);
       setIsLoading(false);
-      Alert.alert('Lỗi', 'Không thể xử lý file ghi âm. Vui lòng thử lại.');
+      setRecording(null);
+      Alert.alert('Lỗi nhận dạng giọng nói', error.message || 'Không thể xử lý file ghi âm. Vui lòng thử lại.');
     }
   };
 

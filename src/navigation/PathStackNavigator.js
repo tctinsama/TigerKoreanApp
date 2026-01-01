@@ -7,6 +7,7 @@ import LessonPathScreen from '../screens/learner/LessonPathScreen';
 import LessonDetailScreen from '../screens/learner/LessonDetailScreen';
 import LeaderboardScreen from '../screens/learner/LeaderboardScreen';
 import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
+import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,11 @@ const PathStackNavigator = () => {
           presentation: 'modal',
         }}
       />
+      <Stack.Screen
+        name="ConversationTopics"
+        component={ConversationTopicsScreen}
+      />
+
       <Stack.Screen 
         name="PersonalInfo" 
         component={PersonalInfoScreen}

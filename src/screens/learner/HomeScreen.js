@@ -11,7 +11,6 @@ import {
   FlatList,
   Animated,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import ChatBotBubble from '../../components/ChatBotBubble';
 
@@ -90,8 +89,8 @@ const HomeScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={false} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
       
       {/* ChatBot Bubble */}
       <ChatBotBubble onPress={() => navigation.navigate('PathTab', { 
@@ -280,7 +279,7 @@ const HomeScreen = ({ navigation }) => {
 
         <View style={{ height: 100 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -291,7 +290,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#FF6B35',
-    paddingTop: Platform.OS === 'ios' ? 10 : 10,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 24,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 20,

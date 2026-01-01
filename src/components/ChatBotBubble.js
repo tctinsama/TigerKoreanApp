@@ -16,47 +16,59 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const ChatBotBubble = ({ onPress }) => {
   const [showTooltip, setShowTooltip] = useState(true);
-  const pan = useRef(new Animated.ValueXY({ x: SCREEN_WIDTH - 80, y: SCREEN_HEIGHT - 200 })).current;
+
+  const pan = useRef(
+    new Animated.ValueXY({
+      x: SCREEN_WIDTH - 80,
+      y: SCREEN_HEIGHT - 200,
+    })
+  ).current;
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const tooltipOpacity = useRef(new Animated.Value(1)).current;
 
-  // Pan responder for draggable bubble
+  /* ================= PAN RESPONDER ================= */
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
+
       onPanResponderGrant: () => {
         pan.setOffset({
           x: pan.x._value,
           y: pan.y._value,
         });
         pan.setValue({ x: 0, y: 0 });
-        
+
         Animated.spring(scaleAnim, {
           toValue: 0.9,
           useNativeDriver: false,
         }).start();
       },
-      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
-        useNativeDriver: false,
-      }),
+
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false }
+      ),
+
       onPanResponderRelease: (e, gesture) => {
         pan.flattenOffset();
-        
-        // Snap to edges
+
         const toValue = { x: pan.x._value, y: pan.y._value };
-        
+
+        // Snap trái / phải
         if (pan.x._value < SCREEN_WIDTH / 2) {
           toValue.x = 20;
         } else {
           toValue.x = SCREEN_WIDTH - 80;
         }
-        
-        // Keep within screen bounds
+
+        // Giữ trong màn hình
         if (toValue.y < 60) toValue.y = 60;
         if (toValue.y > SCREEN_HEIGHT - 120) toValue.y = SCREEN_HEIGHT - 120;
-        
+
         Animated.parallel([
           Animated.spring(pan, {
             toValue,
@@ -70,15 +82,16 @@ const ChatBotBubble = ({ onPress }) => {
           }),
         ]).start();
 
-        // If it's a tap (not a drag), open chat
+        // Nếu là tap (không drag) → mở chat
         if (Math.abs(gesture.dx) < 5 && Math.abs(gesture.dy) < 5) {
-          onPress();
+          onPress && onPress();
         }
       },
     })
   ).current;
 
-  // Pulse animation
+  /* ================= PULSE ANIMATION ================= */
+
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.sequence([
@@ -94,12 +107,13 @@ const ChatBotBubble = ({ onPress }) => {
         }),
       ])
     );
-    pulse.start();
 
+    pulse.start();
     return () => pulse.stop();
   }, []);
 
-  // Hide tooltip after 3 seconds
+  /* ================= TOOLTIP AUTO HIDE ================= */
+
   useEffect(() => {
     const timer = setTimeout(() => {
       Animated.timing(tooltipOpacity, {
@@ -111,6 +125,8 @@ const ChatBotBubble = ({ onPress }) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  /* ================= RENDER ================= */
 
   return (
     <>
@@ -146,31 +162,39 @@ const ChatBotBubble = ({ onPress }) => {
           },
         ]}
       >
-        <Animated.View
-          style={[
-            styles.pulseCircle,
-            {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        />
-        
-        <View style={styles.bubbleContent}>
-          <Image 
-            source={require('../../assets/imagechatbot.jpg')} 
-            style={styles.tigerImage}
-            resizeMode="cover"
+        <TouchableOpacity activeOpacity={0.8} style={{ flex: 1 }} onPress={onPress}>
+          {/* Pulse */}
+          <Animated.View
+            style={[
+              styles.pulseCircle,
+              {
+                transform: [{ scale: pulseAnim }],
+              },
+            ]}
           />
-        </View>
 
-        {/* Badge notification */}
-        <View style={styles.badge}>
-          <MaterialCommunityIcons name="chat" size={12} color="#FFF" />
-        </View>
+          {/* Bubble content */}
+          <View style={styles.bubbleContent}>
+            <Image
+              source={require('../../assets/imagechatbot.jpg')}
+              style={styles.tigerImage}
+              resizeMode="cover"
+            />
+          </View>
+
+          {/* Badge */}
+          <View style={styles.badge}>
+            <MaterialCommunityIcons name="chat" size={12} color="#FFF" />
+          </View>
+        </TouchableOpacity>
       </Animated.View>
     </>
   );
 };
+
+export default ChatBotBubble;
+
+/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   bubble: {
@@ -179,6 +203,7 @@ const styles = StyleSheet.create({
     height: 70,
     zIndex: 1000,
   },
+
   pulseCircle: {
     position: 'absolute',
     width: 70,
@@ -187,6 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     opacity: 0.3,
   },
+
   bubbleContent: {
     width: 70,
     height: 70,
@@ -203,6 +229,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
+
   tigerImage: {
     width: '120%',
     height: '120%',
@@ -210,6 +237,7 @@ const styles = StyleSheet.create({
     top: '-10%',
     left: '-10%',
   },
+
   badge: {
     position: 'absolute',
     top: 0,
@@ -223,6 +251,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFF',
   },
+
   tooltip: {
     position: 'absolute',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -231,11 +260,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     zIndex: 999,
   },
+
   tooltipText: {
     color: '#FFF',
     fontSize: 13,
     fontWeight: '600',
   },
 });
-
-export default ChatBotBubble;
