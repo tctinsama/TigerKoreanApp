@@ -71,30 +71,36 @@ const ProfileScreen = ({ navigation }) => {
     },
     {
       id: 2,
-      icon: '⚙️',
-      title: 'Cài đặt',
-      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+      icon: '🔐',
+      title: 'Đổi mật khẩu',
+      onPress: () => navigation.navigate('ChangePassword'),
     },
     {
       id: 3,
       icon: '📊',
       title: 'Thống kê học tập',
-      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+      onPress: () => navigation.navigate('LearningStats'),
     },
     {
       id: 4,
+      icon: '⚙️',
+      title: 'Cài đặt',
+      onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
+    },
+    {
+      id: 5,
       icon: '🎯',
       title: 'Mục tiêu',
       onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
     },
     {
-      id: 5,
+      id: 6,
       icon: '🔔',
       title: 'Thông báo',
       onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
     },
     {
-      id: 6,
+      id: 7,
       icon: '❓',
       title: 'Trợ giúp',
       onPress: () => Alert.alert('Thông báo', 'Tính năng đang phát triển'),
@@ -137,24 +143,7 @@ const ProfileScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Ngày học</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>45</Text>
-            <Text style={styles.statLabel}>Từ vựng</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>8</Text>
-            <Text style={styles.statLabel}>Bài học</Text>
-          </View>
-        </View>
-
+    
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           {menuItems.map((item) => (

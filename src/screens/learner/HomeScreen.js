@@ -10,6 +10,7 @@ import {
   Dimensions,
   FlatList,
   Animated,
+  ImageBackground,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import ChatBotBubble from '../../components/ChatBotBubble';
@@ -23,9 +24,9 @@ const HomeScreen = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const bannerData = [
-    { id: 1, title: 'Học tiếng Hàn dễ dàng', subtitle: 'Với K-Tiger Study', color: '#FF6B35' },
-    { id: 2, title: 'Thi thử TOPIK miễn phí', subtitle: 'Đánh giá trình độ chính xác', color: '#3B82F6' },
-    { id: 3, title: 'Chat AI luyện hội thoại', subtitle: 'Nâng cao kỹ năng giao tiếp', color: '#10B981' },
+    { id: 1, image: require('../../../assets/banner_1.png') },
+    { id: 2, image: require('../../../assets/banner_3.png') },
+    { id: 3, image: require('../../../assets/banner_4.webp') },
   ];
 
   const topikLevels = [
@@ -82,15 +83,16 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const renderBanner = ({ item }) => (
-    <View style={[styles.bannerSlide, { backgroundColor: item.color }]}>
-      <Text style={styles.bannerTitle}>{item.title}</Text>
-      <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
-    </View>
+    <ImageBackground 
+      source={item.image} 
+      style={styles.bannerSlide}
+      resizeMode="cover"
+    />
   );
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={true} />
+      <StatusBar barStyle="light-content" backgroundColor="#FF6B35" translucent={false} />
       
       {/* ChatBot Bubble */}
       <ChatBotBubble onPress={() => navigation.navigate('PathTab', { 
@@ -329,6 +331,13 @@ const styles = StyleSheet.create({
   bannerContainer: {
     height: 200,
     marginTop: 16,
+  },
+  bannerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bannerSlide: {
     width: width,

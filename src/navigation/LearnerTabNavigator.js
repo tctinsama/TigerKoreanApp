@@ -6,7 +6,7 @@ import { COLORS } from '../constants/colors';
 
 // Import các màn hình
 import HomeScreen from '../screens/learner/HomeScreen';
-import PlacementTestScreen from '../screens/PlacementTestScreen';
+import PlacementTestScreen from '../screens/learner/PlacementTestScreen';
 import TestStackNavigator from './TestStackNavigator';
 import PathStackNavigator from './PathStackNavigator';
 import ProfileScreen from '../screens/learner/ProfileScreen';
@@ -15,12 +15,17 @@ const Tab = createBottomTabNavigator();
 
 // Custom Tab Bar Component
 const CustomTabBar = ({ state, descriptors, navigation }) => {
-  // Check if current route is ChatBot or ConversationPractice
+  // Check if current route is ChatBot, ConversationPractice, or Exam screens
   const currentRoute = state.routes[state.index];
   const nestedRoute = currentRoute.state?.routes[currentRoute.state?.index];
-  const shouldHideTabBar = nestedRoute?.name === 'ChatBot' || nestedRoute?.name === 'ConversationPractice';
+  const shouldHideTabBar = 
+    nestedRoute?.name === 'ChatBot' || 
+    nestedRoute?.name === 'ConversationPractice' ||
+    nestedRoute?.name === 'ExamDetail' ||
+    nestedRoute?.name === 'ExamAttempt' ||
+    nestedRoute?.name === 'ExamResult';
 
-  // Hide tab bar if on ChatBot or ConversationPractice screen
+  // Hide tab bar if on specific screens
   if (shouldHideTabBar) {
     return null;
   }

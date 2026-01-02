@@ -1,4 +1,4 @@
-//src/constants/config.js
+﻿//src/constants/config.js
 // Cấu hình API endpoint cho Spring Boot backend
 const API_CONFIG = {
   // Chọn BASE_URL phù hợp với môi trường của bạn:
@@ -7,7 +7,7 @@ const API_CONFIG = {
   // BASE_URL: 'http://10.0.2.2:8080/api',
   
   // 2. Điện thoại thật qua Expo Go (IP máy tính của bạn):
-  BASE_URL: 'http://192.168.1.154:8080/api',
+  BASE_URL: 'http://192.168.20.123:8080/api',
   
   // 3. Localhost (iOS simulator hoặc development):
   //BASE_URL: 'http://localhost:8080/api',
@@ -20,7 +20,7 @@ const API_CONFIG = {
   GOOGLE_CLIENT_ID: '163931303040-f2d5b0sr9ervddgg3eceuaqqhvoifvro.apps.googleusercontent.com',
   
   // Groq AI API Key
-  GROQ_API_KEY: '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',
+  GROQ_API_KEY: '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',
   
   TIMEOUT: 30000, // 30 seconds
 };
@@ -28,40 +28,43 @@ const API_CONFIG = {
 // Các endpoints API
 export const API_ENDPOINTS = {
   AUTH: {
+    REGISTER: '/auth/signup',
     SIGNIN: '/auth/signin',
-    SIGNUP: '/auth/signup',
     LOGOUT: '/auth/logout',
     REFRESH_TOKEN: '/auth/refresh-token',
-  },
-  USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/update',
-  },
-  LEVELS: {
-    GET_ALL: '/levels',
-    GET_BY_ID: '/levels',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
   LESSONS: {
-    GET_BY_LEVEL: '/lessons',
-    GET_WITH_PROGRESS: '/lessons/progress', // GET /lessons/progress?levelId=X&userId=Y
-    COMPLETE: '/lessons/complete', // POST /lessons/complete?userId=X&lessonId=Y&score=Z (mở khóa bài tiếp)
+    BASE: '/lessons',
+    BY_LEVEL: '/lessons/level',
+    UNLOCK: '/lessons/unlock',
+    PROGRESS: '/lessons/progress',
   },
   VOCABULARY: {
-    BY_LESSON: '/vocabulary-theories/lesson',
-    BY_ID: '/vocabulary-theories',
+    BASE: '/vocabulary',
+    BY_LEVEL: '/vocabulary/level',
+    BY_LESSON: '/vocabulary/lesson',
   },
   GRAMMAR: {
-    BY_LESSON: '/grammar-theories/lesson',
-    BY_ID: '/grammar-theories',
-    COMPLETE: '/grammar-theories/complete',
+    BASE: '/grammar',
+    BY_LEVEL: '/grammar/level',
+    BY_LESSON: '/grammar/lesson',
   },
   EXERCISES: {
+    BASE: '/exercises',
     BY_LESSON: '/exercises/lesson',
-    MCQ: '/mcq/exercise',
-    SENTENCE_REWRITING: '/sentence-rewriting/exercise',
-    SAVE_RESULT: '/user-exercise-results',
+    SUBMIT: '/exercises/submit',
   },
-  // Thêm các endpoints khác theo API của bạn
+  LEVELS: {
+    BASE: '/levels',
+    PROGRESS: '/levels/progress',
+  },
+  CHAT: {
+    BASE: '/chat',
+    CONVERSATION: '/chat/conversation',
+  },
+  LEADERBOARD: '/leaderboard',
 };
 
 export default API_CONFIG;

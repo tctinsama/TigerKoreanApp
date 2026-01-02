@@ -175,7 +175,15 @@ const ExamAttemptScreen = ({ navigation, route }) => {
 
       if (attemptData.examId) {
         const sectionsData = await examService.getSectionsByExam(attemptData.examId);
-        setSections(sectionsData.sort((a, b) => a.sectionOrder - b.sectionOrder));
+        const sortedSections = sectionsData.sort((a, b) => a.sectionOrder - b.sectionOrder);
+        
+        console.log('📊 Sections loaded:', sortedSections.map(s => ({
+          type: s.sectionType,
+          duration: s.durationMinutes,
+          questions: s.totalQuestions
+        })));
+        
+        setSections(sortedSections);
         setCurrentSectionIndex(savedSectionIndex);
         setCurrentQuestionIndex(savedQuestionIndex);
       }
@@ -243,37 +251,46 @@ const ExamAttemptScreen = ({ navigation, route }) => {
   };
 
   const loadOrResetTimer = async () => {
+    const section = sections[currentSectionIndex];
     const saved = await AsyncStorage.getItem('topik_in_progress');
     let shouldLoadSavedTime = false;
 
     if (saved) {
       try {
         const data = JSON.parse(saved);
+        
+        // Only load saved time if we're on the SAME section as before
+        // If section changed, always reset to new section's duration
         if (
           data.attemptId === attemptId &&
           data.currentSectionIndex === currentSectionIndex &&
           data.timeLeft
         ) {
+          console.log(`⏱️ Loading saved time: ${data.timeLeft}s for section ${currentSectionIndex}`);
           setTimeLeft(data.timeLeft);
           shouldLoadSavedTime = true;
         }
 
-        data.currentSectionIndex = currentSectionIndex;
-        data.currentQuestionIndex = currentQuestionIndex;
+        // If section changed or no saved time, reset to section's duration
         if (!shouldLoadSavedTime) {
-          const section = sections[currentSectionIndex];
           const newTime = section.durationMinutes * 60;
+          console.log(`⏱️ Reset timer to ${section.durationMinutes} minutes (${newTime}s) for ${section.sectionType}`);
           setTimeLeft(newTime);
           data.timeLeft = newTime;
         }
+        
+        data.currentSectionIndex = currentSectionIndex;
+        data.currentQuestionIndex = currentQuestionIndex;
         await AsyncStorage.setItem('topik_in_progress', JSON.stringify(data));
       } catch (err) {
-        const section = sections[currentSectionIndex];
-        setTimeLeft(section.durationMinutes * 60);
+        console.error('Error loading timer:', err);
+        const newTime = section.durationMinutes * 60;
+        setTimeLeft(newTime);
       }
     } else {
-      const section = sections[currentSectionIndex];
-      setTimeLeft(section.durationMinutes * 60);
+      const newTime = section.durationMinutes * 60;
+      console.log(`⏱️ Initial timer: ${section.durationMinutes} minutes for ${section.sectionType}`);
+      setTimeLeft(newTime);
     }
   };
 
@@ -603,9 +620,25 @@ const ExamAttemptScreen = ({ navigation, route }) => {
               }
 
               const newSectionIndex = currentSectionIndex + 1;
+              const nextSection = sections[newSectionIndex];
+              
+              // Reset timer to new section's duration
+              const newTime = nextSection.durationMinutes * 60;
+              console.log(`⏱️ Switching to ${nextSection.sectionType}: Reset timer to ${nextSection.durationMinutes} minutes`);
+              setTimeLeft(newTime);
+              
+              // Clear timer from AsyncStorage to force reset
+              const saved = await AsyncStorage.getItem('topik_in_progress');
+              if (saved) {
+                const data = JSON.parse(saved);
+                data.currentSectionIndex = newSectionIndex;
+                data.currentQuestionIndex = 0;
+                data.timeLeft = newTime; // Set new section's time
+                await AsyncStorage.setItem('topik_in_progress', JSON.stringify(data));
+              }
+              
               setCurrentSectionIndex(newSectionIndex);
               setCurrentQuestionIndex(0);
-              updateSavedPosition(newSectionIndex, 0);
             },
           },
         ]
@@ -1482,7 +1515,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingBottom: 90,
+    paddingBottom: 16,
   },
   navButtons: {
     flexDirection: 'row',

@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#fff',
     padding: 16,
-    paddingBottom: 90, // Thêm padding để tránh tab bar (tabbar ~70px + spacing)
+     // Thêm padding để tránh tab bar (tabbar ~70px + spacing)
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
     shadowColor: '#000',

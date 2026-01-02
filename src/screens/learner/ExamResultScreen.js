@@ -1091,13 +1091,14 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: '#fff',
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
   retakeButton: {
     backgroundColor: '#FF6B35',
     paddingVertical: 14,
+ 
     borderRadius: 8,
     alignItems: 'center',
   },

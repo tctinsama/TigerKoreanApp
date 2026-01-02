@@ -8,6 +8,7 @@ import LessonDetailScreen from '../screens/learner/LessonDetailScreen';
 import LeaderboardScreen from '../screens/learner/LeaderboardScreen';
 import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
 import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
+import PlacementTestScreen from '../screens/learner/PlacementTestScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,13 @@ const PathStackNavigator = () => {
       <Stack.Screen 
         name="PersonalInfo" 
         component={PersonalInfoScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen 
+        name="PlacementTest" 
+        component={PlacementTestScreen}
         options={{
           animation: 'slide_from_right',
         }}

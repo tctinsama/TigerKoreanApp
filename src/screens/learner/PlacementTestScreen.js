@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';
-import { placementQuestions, levelRecommendations } from '../constants/placementTestData';
+import { placementQuestions, levelRecommendations } from '../../constants/placementTestData';
 
 const { width } = Dimensions.get('window');
 

@@ -11,6 +11,8 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import LearnerTabNavigator from './LearnerTabNavigator';
 import PersonalInfoScreen from '../screens/learner/PersonalInfoScreen';
+import LearningStatsScreen from '../screens/learner/LearningStatsScreen';
+import ChangePasswordScreen from '../screens/learner/ChangePasswordScreen';
 import ConversationTopicsScreen from '../screens/learner/ConversationTopicsScreen';
 import ConversationPracticeScreen from '../screens/learner/ConversationPracticeScreen';
 
@@ -68,6 +70,8 @@ const AppNavigator = () => {
           <>
             <Stack.Screen name="MainTabs" component={LearnerTabNavigator} />
             <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+            <Stack.Screen name="LearningStats" component={LearningStatsScreen} />
+            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
             <Stack.Screen 
               name="ConversationTopics" 
               component={ConversationTopicsScreen}
