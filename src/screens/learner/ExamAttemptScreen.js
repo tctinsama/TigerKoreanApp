@@ -480,7 +480,7 @@ const ExamAttemptScreen = ({ navigation, route }) => {
 
     try {
       setAudioLoading(true);
-      console.log('Playing section audio:', audioUrl);
+      console.log('🎵 Playing section audio:', audioUrl);
       
       // Stop current section audio if playing
       if (sectionAudioSound) {
@@ -499,30 +499,42 @@ const ExamAttemptScreen = ({ navigation, route }) => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       console.log('Creating new audio sound...');
-      // Load and play new audio
+      // Load and play new audio - AUTOPLAY
       const { sound } = await Audio.Sound.createAsync(
         { uri: audioUrl },
-        { shouldPlay: true }
+        { shouldPlay: true, // ✅ Auto-play like website
+          isLooping: false,
+          volume: 1.0,
+        }
       );
       
-      console.log('Audio created successfully');
+      console.log('✅ Audio created and auto-playing');
       setSectionAudioSound(sound);
       setIsSectionAudioPlaying(true);
 
       // Set callback when audio finishes
       sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) {
-          console.log('Audio finished playing');
-          setIsSectionAudioPlaying(false);
+        if (status.isLoaded) {
+          // Prevent pause - auto resume if paused
+          if (!status.isPlaying && !status.didJustFinish) {
+            console.log('⚠️ Audio paused detected - auto resuming...');
+            sound.playAsync().catch(err => console.log('Resume error:', err));
+          }
+          
+          if (status.didJustFinish) {
+            console.log('🏁 Audio finished playing');
+            setIsSectionAudioPlaying(false);
+          }
         }
+        
         if (status.error) {
-          console.error('Section audio playback error:', status.error);
+          console.error('❌ Section audio playback error:', status.error);
           setIsSectionAudioPlaying(false);
         }
       });
     } catch (err) {
-      console.error('Error playing section audio:', err);
-      Alert.alert('Lỗi', `Không thể phát audio: ${err.message}`);
+      console.error('❌ Error playing section audio:', err);
+      Alert.alert('Lỗi phát audio', `Không thể phát audio. Vui lòng kiểm tra kết nối internet.\n\nChi tiết: ${err.message}`);
     } finally {
       setAudioLoading(false);
     }
@@ -810,31 +822,35 @@ const ExamAttemptScreen = ({ navigation, route }) => {
               <Text style={styles.sectionAudioIcon}>🎧</Text>
               <Text style={styles.sectionAudioTitle}>Audio cho toàn phần Nghe hiểu</Text>
             </View>
-            <View style={styles.sectionAudioButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.sectionAudioButton,
-                  isSectionAudioPlaying && styles.sectionAudioButtonPlaying,
-                ]}
-                onPress={() =>
-                  isSectionAudioPlaying
-                    ? handleStopSectionAudio()
-                    : handlePlaySectionAudio(currentSection.audioUrl)
-                }
-                disabled={audioLoading}
-              >
-                {audioLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.sectionAudioButtonText}>
-                    {isSectionAudioPlaying ? '⏸️ Dừng' : '▶️ Phát audio'}
-                  </Text>
-                )}
-              </TouchableOpacity>
+            <View style={styles.audioStatusContainer}>
+              {audioLoading ? (
+                <View style={styles.audioStatusRow}>
+                  <ActivityIndicator size="small" color="#FF6B35" />
+                  <Text style={styles.audioStatusText}>Đang tải audio...</Text>
+                </View>
+              ) : isSectionAudioPlaying ? (
+                <View style={styles.audioStatusRow}>
+                  <View style={styles.audioPlayingIndicator}>
+                    <View style={[styles.audioBars, styles.audioBar1]} />
+                    <View style={[styles.audioBars, styles.audioBar2]} />
+                    <View style={[styles.audioBars, styles.audioBar3]} />
+                  </View>
+                  <Text style={styles.audioStatusTextPlaying}>▶️ Đang phát audio...</Text>
+                </View>
+              ) : (
+                <View style={styles.audioStatusRow}>
+                  <Text style={styles.audioStatusIcon}>✅</Text>
+                  <Text style={styles.audioStatusText}>Audio đã phát xong</Text>
+                </View>
+              )}
             </View>
-            <Text style={styles.sectionAudioNote}>
-              💡 Audio sẽ chạy liên tục cho cả phần thi. Bạn có thể chuyển câu trong khi nghe.
-            </Text>
+            <View style={styles.sectionAudioNote}>
+              <Text style={styles.sectionAudioNoteIcon}>⚠️</Text>
+              <Text style={styles.sectionAudioNoteText}>
+                Audio tự động phát và KHÔNG thể tạm dừng (giống thi thật).{'\n'}
+                Bạn có thể chuyển câu trong khi nghe.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -1286,9 +1302,75 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   sectionAudioNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF3E0',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+    marginTop: 12,
+  },
+  sectionAudioNoteIcon: {
+    fontSize: 16,
+    marginRight: 8,
+    marginTop: 2,
+  },
+  sectionAudioNoteText: {
+    flex: 1,
     fontSize: 12,
-    color: '#1565C0',
+    color: '#E65100',
     lineHeight: 18,
+  },
+  audioStatusContainer: {
+    backgroundColor: '#F5F5F5',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  audioStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  audioStatusText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+    fontWeight: '500',
+  },
+  audioStatusTextPlaying: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  audioStatusIcon: {
+    fontSize: 20,
+  },
+  audioPlayingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 20,
+    gap: 3,
+  },
+  audioBars: {
+    width: 3,
+    backgroundColor: '#4CAF50',
+    borderRadius: 2,
+  },
+  audioBar1: {
+    height: 12,
+    animation: 'bounce 0.5s infinite',
+  },
+  audioBar2: {
+    height: 16,
+    animation: 'bounce 0.6s infinite',
+  },
+  audioBar3: {
+    height: 10,
+    animation: 'bounce 0.7s infinite',
   },
   questionContainer: {
     flex: 1,

@@ -15,8 +15,10 @@ class AuthService {
       const { token, ...userData } = response.data;
 
       // Lưu token và thông tin user vào AsyncStorage
-      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('accessToken', token);
       await AsyncStorage.setItem('user', JSON.stringify(response.data));
+      
+      console.log('✅ Token saved to AsyncStorage:', token.substring(0, 20) + '...');
 
       return response.data; // Trả về data để AuthContext xử lý
     } catch (error) {
