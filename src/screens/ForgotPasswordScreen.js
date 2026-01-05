@@ -36,6 +36,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
     try {
       await apiClient.post('/auth/forgot-password', {
         email: email.trim(),
+        platform: 'mobile', // Backend dùng để tạo deep link cho mobile
       });
       
       setSuccess(true);

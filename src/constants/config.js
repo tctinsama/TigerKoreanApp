@@ -11,7 +11,10 @@ const getBaseURL = () => {
   
   // Nếu đang chạy trên điện thoại thật hoặc Expo Go
   // Thay IP này bằng IP máy tính của bạn
-  return 'http://192.168.20.123:8080/api';
+  // return 'http://192.168.20.123:8080/api';
+  return 'http://192.168.88.114:8080/api';
+
+
 };
 
 // Cấu hình API endpoint cho Spring Boot backend
@@ -38,6 +41,8 @@ export const API_ENDPOINTS = {
     SIGNUP: '/auth/signup',
     LOGOUT: '/auth/logout',
     REFRESH_TOKEN: '/auth/refresh-token',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
   },
   USER: {
     PROFILE: '/user/profile',

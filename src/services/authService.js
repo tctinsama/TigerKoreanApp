@@ -71,6 +71,37 @@ class AuthService {
       return null;
     }
   }
+
+  // Quên mật khẩu - Gửi email reset
+  async forgotPassword(email) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
+        email,
+      });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Gửi yêu cầu thất bại',
+      };
+    }
+  }
+
+  // Đặt lại mật khẩu với token
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+        token,
+        newPassword,
+      });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Đặt lại mật khẩu thất bại',
+      };
+    }
+  }
 }
 
 export default new AuthService();

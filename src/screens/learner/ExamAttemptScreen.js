@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import examService from '../../services/examService';
 
@@ -42,25 +43,68 @@ const ExamAttemptScreen = ({ navigation, route }) => {
   const timerRef = useRef(null);
   const saveTextTimerRef = useRef(new Map());
 
+  // Cleanup audio when screen loses focus or unmounts
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // Cleanup khi rời màn hình
+        console.log('🔊 Cleaning up audio on screen blur/unmount...');
+        cleanupAllAudio();
+      };
+    }, [audioSound, sectionAudioSound])
+  );
+
   useEffect(() => {
     if (attemptId) {
       setupAudio();
       fetchAttemptData();
     }
     return () => {
-      // Cleanup: Stop and unload all audio when leaving screen
-      console.log('Cleaning up audio...');
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (audioSound) {
-        audioSound.stopAsync().catch(err => console.log('Error stopping audio:', err));
-        audioSound.unloadAsync().catch(err => console.log('Error unloading audio:', err));
+      // Cleanup: Stop timer and audio when component unmounts
+      console.log('🔊 Component unmounting - cleaning up...');
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-      if (sectionAudioSound) {
-        sectionAudioSound.stopAsync().catch(err => console.log('Error stopping section audio:', err));
-        sectionAudioSound.unloadAsync().catch(err => console.log('Error unloading section audio:', err));
-      }
+      cleanupAllAudio();
     };
   }, [attemptId]);
+
+  const cleanupAllAudio = async () => {
+    try {
+      console.log('🔊 Stopping all audio...');
+      
+      // Stop question audio
+      if (audioSound) {
+        try {
+          await audioSound.stopAsync();
+          await audioSound.unloadAsync();
+          console.log('✅ Question audio stopped');
+        } catch (err) {
+          console.log('⚠️ Error stopping question audio:', err.message);
+        }
+        setAudioSound(null);
+        setIsPlaying(false);
+      }
+      
+      // Stop section audio
+      if (sectionAudioSound) {
+        try {
+          await sectionAudioSound.stopAsync();
+          await sectionAudioSound.unloadAsync();
+          console.log('✅ Section audio stopped');
+        } catch (err) {
+          console.log('⚠️ Error stopping section audio:', err.message);
+        }
+        setSectionAudioSound(null);
+        setIsSectionAudioPlaying(false);
+      }
+      
+      console.log('✅ All audio cleaned up');
+    } catch (err) {
+      console.log('⚠️ Error in cleanupAllAudio:', err.message);
+    }
+  };
 
   const setupAudio = async () => {
     try {
@@ -329,6 +373,9 @@ const ExamAttemptScreen = ({ navigation, route }) => {
 
   const handleAutoSubmit = async () => {
     try {
+      // Stop all audio before auto-submitting
+      await cleanupAllAudio();
+      
       await examService.submitExam(attemptId);
       await AsyncStorage.removeItem('topik_in_progress');
       Alert.alert('Hết giờ', 'Bài thi đã được tự động nộp.', [
@@ -668,6 +715,9 @@ const ExamAttemptScreen = ({ navigation, route }) => {
         style: 'destructive',
         onPress: async () => {
           try {
+            // Stop all audio before submitting
+            await cleanupAllAudio();
+            
             await examService.submitExam(attemptId);
             await AsyncStorage.removeItem('topik_in_progress');
             Alert.alert('Thành công', 'Nộp bài thành công!', [
@@ -696,18 +746,7 @@ const ExamAttemptScreen = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             // Stop all audio before leaving
-            try {
-              if (audioSound) {
-                await audioSound.stopAsync();
-                await audioSound.unloadAsync();
-              }
-              if (sectionAudioSound) {
-                await sectionAudioSound.stopAsync();
-                await sectionAudioSound.unloadAsync();
-              }
-            } catch (err) {
-              console.log('Error stopping audio on exit:', err);
-            }
+            await cleanupAllAudio();
             navigation.goBack();
           },
         },
@@ -818,10 +857,7 @@ const ExamAttemptScreen = ({ navigation, route }) => {
         {/* Section Audio Player for LISTENING */}
         {currentSection.sectionType === 'LISTENING' && currentSection.audioUrl && (
           <View style={styles.sectionAudioCard}>
-            <View style={styles.sectionAudioHeader}>
-              <Text style={styles.sectionAudioIcon}>🎧</Text>
-              <Text style={styles.sectionAudioTitle}>Audio cho toàn phần Nghe hiểu</Text>
-            </View>
+           
             <View style={styles.audioStatusContainer}>
               {audioLoading ? (
                 <View style={styles.audioStatusRow}>
@@ -844,13 +880,7 @@ const ExamAttemptScreen = ({ navigation, route }) => {
                 </View>
               )}
             </View>
-            <View style={styles.sectionAudioNote}>
-              <Text style={styles.sectionAudioNoteIcon}>⚠️</Text>
-              <Text style={styles.sectionAudioNoteText}>
-                Audio tự động phát và KHÔNG thể tạm dừng (giống thi thật).{'\n'}
-                Bạn có thể chuyển câu trong khi nghe.
-              </Text>
-            </View>
+          
           </View>
         )}
 
